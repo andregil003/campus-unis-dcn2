@@ -1,0 +1,102 @@
+# Tabla de direccionamiento y costos OSPF
+
+Estado: **propuesta del equipo, pendiente de confirmar D-01 (WiFi) con el catedrático.**
+Bloques obligatorios del enunciado respetados: Norte en `10.10.0.0/8`, Sur en `10.20.0.0/8`,
+inter-sede `10.99.0.0/30`, WANs `100.64.1.0/30` y `100.64.2.0/30`.
+
+---
+
+## 1. Sede Norte — Grupo A (nuestra responsabilidad)
+
+### 1.1 GW-A · RB5009UPr+S+
+
+| Interfaz | Dirección | Rol |
+|---|---|---|
+| `ether1` | `100.64.1.2/30` | WAN hacia router ISP (gateway `100.64.1.1`) |
+| `ether2` | `10.10.1.1/30` | enlace al anillo → hAP-1A |
+| `ether6` | `10.10.6.2/30` | enlace al anillo → hAP-5A |
+| `ether7` | `10.99.0.1/30` | hacia SXT-A (puente L2 inter-sede) |
+| `loopback` | `10.10.255.1/32` | router-id OSPF + IP de DNS que entrega el DHCP |
+| `veth1` | `10.10.254.1/24` | red del container |
+| — | `10.10.254.53` | Pi-hole (container) |
+
+> Puertos `ether2`/`ether6` son asignación propuesta: se ajustan al cableado real del rack sin cambiar las IPs.
+
+### 1.2 Anillo Norte (6 nodos, 6 enlaces /30)
+
+| Enlace | Subred | Extremo A | Extremo B |
+|---|---|---|---|
+| L1 | `10.10.1.0/30` | GW-A `.1` | hAP-1A `.2` |
+| L2 | `10.10.2.0/30` | hAP-1A `.1` | hAP-2A `.2` |
+| L3 | `10.10.3.0/30` | hAP-2A `.1` | hAP-3A `.2` |
+| L4 | `10.10.4.0/30` | hAP-3A `.1` | hAP-4A `.2` |
+| L5 | `10.10.5.0/30` | hAP-4A `.1` | hAP-5A `.2` |
+| L6 | `10.10.6.0/30` | hAP-5A `.1` | GW-A `.2` |
+
+### 1.3 Nodos hAP ax lite
+
+| Nodo | ether1 (anillo) | ether2 (anillo) | WiFi | Loopback / router-id |
+|---|---|---|---|---|
+| hAP-1A | `10.10.1.2/30` | `10.10.2.1/30` | `10.10.11.1/24` | `10.10.255.11/32` |
+| hAP-2A | `10.10.2.2/30` | `10.10.3.1/30` | `10.10.12.1/24` | `10.10.255.12/32` |
+| hAP-3A | `10.10.3.2/30` | `10.10.4.1/30` | `10.10.13.1/24` | `10.10.255.13/32` |
+| hAP-4A | `10.10.4.2/30` | `10.10.5.1/30` | `10.10.14.1/24` | `10.10.255.14/32` |
+| hAP-5A | `10.10.5.2/30` | `10.10.6.1/30` | `10.10.15.1/24` | `10.10.255.15/32` |
+
+`ether3` del **hAP-1A** = `10.10.0.1/24`, dedicado a la Raspberry Pi. Sin bridge: es un puerto enrutado.
+
+### 1.4 Servidor y clientes
+
+| Elemento | Dirección | Notas |
+|---|---|---|
+| Raspberry Pi A (nginx) | `10.10.0.100/24`, gw `10.10.0.1` | IP fija exigida por el enunciado |
+| Pool DHCP WiFi | `10.10.1X.10 – 10.10.1X.250` | por nodo (X = número de hAP) |
+
+---
+
+## 2. Sede Sur — Grupo B (acuerdo entre grupos, no configuración nuestra)
+
+| Elemento | Dirección |
+|---|---|
+| GW-B WAN | `100.64.2.2/30` (gateway `100.64.2.1`) |
+| GW-B ↔ SXT-B | `10.99.0.2/30` |
+| GW-B loopback | `10.20.255.1/32` |
+| Anillo Sur (5 enlaces) | `10.20.1.0/30` … `10.20.5.0/30` |
+| WiFi hAP-1B…4B | `10.20.11.1` … `10.20.14.1` (`.0/24` cada uno) |
+| Raspberry Pi B (nginx) | `10.20.0.100/24` |
+| AdGuard Home (container) | `10.20.254.53` |
+
+> Pendiente de cerrar con Grupo B: confirmación de estos bloques y del direccionamiento WiFi (D-01).
+
+---
+
+## 3. Costos OSPF
+
+| Tipo de enlace | Costo | Motivo |
+|---|---|---|
+| Ethernet 1 Gbps (anillo) | **10** | todos iguales ⇒ la topología de anillo decide el camino |
+| Enlace inter-sede (SXT, 100 Mbps) | **1000** | fuerza preferencia local y evita ECMP con el default remoto |
+| Loopback / WiFi / LAN servidor | passive | se anuncian, no forman adyacencia |
+
+Consecuencia buscada: el default local llega con métrica **10** y el remoto con **1010**,
+de modo que la Regla 1 se cumple por diseño, no por suerte.
+
+---
+
+## 4. Vecinos OSPF esperados
+
+| Equipo | Vecinos esperados | Total |
+|---|---|---|
+| GW-A | hAP-1A, hAP-5A, GW-B | 3 Full |
+| hAP-1A … hAP-5A | 2 cada uno | 10 Full |
+| GW-B | hAP-1B, hAP-4B, GW-A | 3 Full |
+| hAP-1B … hAP-4B | 2 cada uno | 8 Full |
+| **Campus** | — | **12 adyacencias** |
+
+---
+
+## 5. Nomenclatura física (para etiquetas y diagrama)
+
+- Formato de etiqueta: `ORIGEN / PUERTO → DESTINO / PUERTO` (ej. `GW-A / ether2 → hAP-1A / ether1`).
+- Identidad del equipo = nombre del diagrama = etiqueta del rack.
+- SSID: `UNIS-N1` … `UNIS-N5` (Norte), `UNIS-S1` … `UNIS-S4` (Sur).
