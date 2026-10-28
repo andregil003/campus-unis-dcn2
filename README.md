@@ -5,7 +5,7 @@ Catedrático: Ing. Gustavo Adolfo Morales Xitamul
 Valor: **40 puntos** + hasta **5 puntos** de instalación física · Defensa oral presencial en semana 15.
 
 > Este repositorio **no contiene configuración**: contiene los estándares que el equipo se compromete a
-> cumplir, el direccionamiento congelado, los resultados medibles, los riesgos conocidos y el plan de defensa.
+> cumplir, el direccionamiento congelado, los resultados medibles, los riesgos conocidos y el inventario real.
 > La configuración vive en el equipo físico (ver `docs/00-ESTANDARES.md` §E-09).
 
 ---
@@ -15,27 +15,31 @@ Valor: **40 puntos** + hasta **5 puntos** de instalación física · Defensa ora
 | Documento | Qué contiene |
 |---|---|
 | [`docs/00-ESTANDARES.md`](docs/00-ESTANDARES.md) | Los 11 estándares obligatorios del equipo (E-01…E-11) con criterio de aceptación |
-| [`docs/01-TABLA-IPs.md`](docs/01-TABLA-IPs.md) | Tabla de direccionamiento completa, costos OSPF y plano de puertos |
+| [`docs/01-TABLA-IPs.md`](docs/01-TABLA-IPs.md) | Tabla de direccionamiento completa, costos OSPF y vecinos esperados |
 | [`docs/02-RESULTADOS-ESPERADOS.md`](docs/02-RESULTADOS-ESPERADOS.md) | 10 pruebas con criterio numérico + ensayos obligatorios |
 | [`docs/03-EXTRAS.md`](docs/03-EXTRAS.md) | Extras opcionales por tier (costo / riesgo / beneficio) |
 | [`docs/04-RIESGOS.md`](docs/04-RIESGOS.md) | Trampas del enunciado, contradicciones y planes B |
-| [`docs/05-PLAN-2-SEMANAS.md`](docs/05-PLAN-2-SEMANAS.md) | Cronograma semana 13-15 y matriz de responsables |
+| [`docs/05-RESPONSABLES.md`](docs/05-RESPONSABLES.md) | Matriz de doble cobertura y reglas de trabajo |
 | [`docs/06-DECISIONES.md`](docs/06-DECISIONES.md) | Registro de decisiones abiertas y tomadas (ADR ligero) |
+| [`docs/07-HARDWARE.md`](docs/07-HARDWARE.md) | Inventario real, capacidades verificadas y consecuencias de diseño |
+| [`fuentes/`](fuentes/) | Enunciado y diagrama de referencia originales (PDF) |
+
+---
+
+## Hardware confirmado
+
+| Equipo | Cantidad | Nota |
+|---|---|---|
+| MikroTik RB5009**UG+S+IN** | 2 | 1× 2.5G + 7× 1G + USB 3.0 · **sin PoE-out** |
+| MikroTik hAP ax lite (`L41G-2axD`) | 9 | 4 puertos GbE · WiFi **solo 2.4 GHz** · USB-C 5 V |
+| Raspberry Pi **Pico** (RP2040) | 1 | microcontrolador: **no puede correr nginx** |
+| Raspberry Pi (SBC, para nginx) | **0** | **faltante crítico** — ver `docs/04-RIESGOS.md` R-13 |
 
 ---
 
 ## Equipo (Grupo A — 5 integrantes)
 
-| Rol | Bloque que domina | Suplente |
-|---|---|---|
-| Responsable de arquitectura y WAN/failover | Defaults OSPF, NAT, Reglas 1/4/5 | _(completar)_ |
-| Responsable de OSPF y anillo | Adyacencias, costos, reconvergencia | _(completar)_ |
-| Responsable de inter-sede y documentación | SXT, puente L2, diagrama + tabla IPs | _(completar)_ |
-| Responsable de servicios | Pi-hole, nginx, Raspberry Pi | _(completar)_ |
-| Responsable de acceso y físico | WiFi, DHCP, rackeo, etiquetado | _(completar)_ |
-
-Regla del equipo: **todos los bloques tienen doble cobertura** (Regla de 2 puntos individuales + prohibido
-responder "esa parte la hizo otro compañero").
+Matriz de responsables con doble cobertura en [`docs/05-RESPONSABLES.md`](docs/05-RESPONSABLES.md).
 
 ---
 
@@ -43,7 +47,8 @@ responder "esa parte la hizo otro compañero").
 
 - [x] Lectura y análisis del enunciado y del diagrama de referencia
 - [x] Estándares, direccionamiento y resultados esperados definidos
-- [ ] Confirmar decisión de direccionamiento WiFi con el catedrático (ver `docs/06-DECISIONES.md` D-01)
-- [ ] Inventario físico real (equipos, puertos, cables)
-- [ ] Implementación (semana 13)
-- [ ] Documentación de entrega (inicio semana 15)
+- [x] Inventario de hardware verificado contra ficha técnica
+- [ ] Resolver el servidor de la sede (D-08: falta una Raspberry Pi real)
+- [ ] Confirmar direccionamiento WiFi con el catedrático (D-01)
+- [ ] Implementación
+- [ ] Documentación de entrega

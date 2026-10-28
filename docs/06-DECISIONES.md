@@ -78,3 +78,30 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
 - Consecuencia: ...
 - Decisor: ...
 ```
+
+---
+
+## D-07 · Hardware real difiere del enunciado
+
+- **Estado:** TOMADA (documentada para la defensa)
+- **Contexto:** el enunciado asigna un RB5009UPr+S+; el equipo tiene RB5009UG+S+IN. La diferencia es el
+  PoE-out (el UPr lo tiene, el UG no). Los hAP ax lite se alimentan por USB-C 5 V y **no aceptan PoE**, así que
+  la diferencia no afecta la arquitectura.
+- **Decisión:** se trabaja con RB5009UG+S+IN, documentando el modelo real y la razón por la que el PoE-out
+  es irrelevante en este diseño.
+- **Consecuencia:** el estándar físico exige regleta con tomas suficientes y una fuente por equipo (R-16).
+
+---
+
+## D-08 · Servidor de la sede: falta la Raspberry Pi
+
+- **Estado:** ABIERTA — bloquea E-08 y los criterios de conectividad (6 pts)
+- **Contexto:** el enunciado exige una Raspberry Pi con nginx. En mano solo hay un **Pico (RP2040)**, que es un
+  microcontrolador sin sistema operativo y no puede ejecutar nginx (R-13).
+- **Opciones:**
+  - **B1 ():** nginx en laptop del grupo. Funciona, es portable; requiere validar con el catedrático.
+  - **B2 ():** Raspberry Pi prestada (laboratorio / compañero).
+  - **B3 ():** Android + Termux + nginx. Real pero frágil.
+  - **B4 (bajo costo):** Raspberry Pi Zero 2 W + fuente + microSD.
+- **Decisión requerida de:** André (y confirmación del catedrático si se elige B1 o B3).
+- **Consecuencia:** sin servidor no se pueden demostrar las pruebas 2 y 3 del protocolo (ping/curl inter-sede).

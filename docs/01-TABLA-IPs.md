@@ -8,19 +8,21 @@ inter-sede `10.99.0.0/30`, WANs `100.64.1.0/30` y `100.64.2.0/30`.
 
 ## 1. Sede Norte — Grupo A (nuestra responsabilidad)
 
-### 1.1 GW-A · RB5009UPr+S+
+### 1.1 GW-A · RB5009UG+S+IN
 
 | Interfaz | Dirección | Rol |
 |---|---|---|
-| `ether1` | `100.64.1.2/30` | WAN hacia router ISP (gateway `100.64.1.1`) |
+| `ether1` (2.5G) | `100.64.1.2/30` | WAN hacia router ISP (gateway `100.64.1.1`) |
 | `ether2` | `10.10.1.1/30` | enlace al anillo → hAP-1A |
-| `ether6` | `10.10.6.2/30` | enlace al anillo → hAP-5A |
+| `ether3` | `10.10.6.2/30` | enlace al anillo → hAP-5A |
 | `ether7` | `10.99.0.1/30` | hacia SXT-A (puente L2 inter-sede) |
 | `loopback` | `10.10.255.1/32` | router-id OSPF + IP de DNS que entrega el DHCP |
 | `veth1` | `10.10.254.1/24` | red del container |
+| `usb1` | — | root-dir del container Pi-hole |
 | — | `10.10.254.53` | Pi-hole (container) |
 
-> Puertos `ether2`/`ether6` son asignación propuesta: se ajustan al cableado real del rack sin cambiar las IPs.
+> Equipo real: `RB5009UG+S+IN` (1× 2.5G + 7× 1G, USB 3.0, **sin PoE-out**).
+> `ether4-6` y `ether8` quedan libres como reserva.
 
 ### 1.2 Anillo Norte (6 nodos, 6 enlaces /30)
 
