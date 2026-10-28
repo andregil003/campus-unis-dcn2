@@ -93,15 +93,15 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
 
 ---
 
-## D-08 · Servidor de la sede: falta la Raspberry Pi
+## D-08 · Servidor de la sede: laptop Windows (Norte) + Raspberry Pi 4 (Sur)
 
-- **Estado:** ABIERTA — bloquea E-08 y los criterios de conectividad (6 pts)
-- **Contexto:** el enunciado exige una Raspberry Pi con nginx. En mano solo hay un **Pico (RP2040)**, que es un
-  microcontrolador sin sistema operativo y no puede ejecutar nginx (R-13).
-- **Opciones:**
-  - **B1 ():** nginx en laptop del grupo. Funciona, es portable; requiere validar con el catedrático.
-  - **B2 ():** Raspberry Pi prestada (laboratorio / compañero).
-  - **B3 ():** Android + Termux + nginx. Real pero frágil.
-  - **B4 (bajo costo):** Raspberry Pi Zero 2 W + fuente + microSD.
-- **Decisión requerida de:** André (y confirmación del catedrático si se elige B1 o B3).
-- **Consecuencia:** sin servidor no se pueden demostrar las pruebas 2 y 3 del protocolo (ping/curl inter-sede).
+- **Estado:** TOMADA — con validación pendiente del catedrático
+- **Contexto:** el enunciado exige una Raspberry Pi con nginx. En Norte no hay SBC: solo un Pico (RP2040) que
+  no puede ejecutar nginx. Sur sí dispone de una **Raspberry Pi 4 de 2 GB**.
+- **Decisión:** Sede Norte usa **laptop con Windows + nginx/Windows**; Sede Sur usa su **Pi 4 + nginx**.
+  El requisito se cumple en comportamiento (IP fija, HTTP 200, `/health`, alcanzable desde la otra sede,
+  arranque automático), no en plataforma.
+- **Consecuencia:** el estándar E-08 se reescribió neutral a plataforma (S-01…S-06) y se documentaron las
+  trampas de Windows en `08-SERVIDOR.md` (§2.3: firewall, suspensión, doble NIC, arranque como servicio).
+- **Riesgo residual:** si el catedrático exige Raspberry Pi física, se activa R-13 opción B2 (Pi prestada) o B4.
+- **Decisor:** André (y confirmación del catedrático).

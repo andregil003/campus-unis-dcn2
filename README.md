@@ -1,4 +1,4 @@
-# Campus UNIS Integrado — Proyecto Final DCN2
+﻿# Campus UNIS Integrado — Proyecto Final DCN2
 
 **Sede Norte / Grupo A** · Data Communication Networks 2 · Universidad del Istmo · Segundo Semestre 2026
 Catedrático: Ing. Gustavo Adolfo Morales Xitamul
@@ -21,7 +21,8 @@ Valor: **40 puntos** + hasta **5 puntos** de instalación física · Defensa ora
 | [`docs/04-RIESGOS.md`](docs/04-RIESGOS.md) | Trampas del enunciado, contradicciones y planes B |
 | [`docs/05-RESPONSABLES.md`](docs/05-RESPONSABLES.md) | Matriz de doble cobertura y reglas de trabajo |
 | [`docs/06-DECISIONES.md`](docs/06-DECISIONES.md) | Registro de decisiones abiertas y tomadas (ADR ligero) |
-| [`docs/07-HARDWARE.md`](docs/07-HARDWARE.md) | Inventario real, capacidades verificadas y consecuencias de diseño |
+| [docs/07-HARDWARE.md](docs/07-HARDWARE.md) | Inventario real, capacidades verificadas y consecuencias de diseño |
+| [docs/08-SERVIDOR.md](docs/08-SERVIDOR.md) | Servidor de sede: estándar neutral S-01…S-06, montaje Windows y Pi 4, pruebas cruzadas |
 | [`fuentes/`](fuentes/) | Enunciado y diagrama de referencia originales (PDF) |
 
 ---
@@ -32,8 +33,9 @@ Valor: **40 puntos** + hasta **5 puntos** de instalación física · Defensa ora
 |---|---|---|
 | MikroTik RB5009**UG+S+IN** | 2 | 1× 2.5G + 7× 1G + USB 3.0 · **sin PoE-out** |
 | MikroTik hAP ax lite (`L41G-2axD`) | 9 | 4 puertos GbE · WiFi **solo 2.4 GHz** · USB-C 5 V |
-| Raspberry Pi **Pico** (RP2040) | 1 | microcontrolador: **no puede correr nginx** |
-| Raspberry Pi (SBC, para nginx) | **0** | **faltante crítico** — ver `docs/04-RIESGOS.md` R-13 |
+| Laptop Windows (servidor Norte) | 1 | nginx/Windows + IP fija `10.10.0.100` — ver `docs/08-SERVIDOR.md` |
+| Raspberry Pi 4 de 2 GB (servidor Sur) | 1 | nginx sobre Raspberry Pi OS Lite, `10.20.0.100` |
+| Raspberry Pi **Pico** (RP2040) | 1 | microcontrolador: **no es servidor** — queda como extra opcional |
 
 ---
 
@@ -48,7 +50,7 @@ Matriz de responsables con doble cobertura en [`docs/05-RESPONSABLES.md`](docs/0
 - [x] Lectura y análisis del enunciado y del diagrama de referencia
 - [x] Estándares, direccionamiento y resultados esperados definidos
 - [x] Inventario de hardware verificado contra ficha técnica
-- [ ] Resolver el servidor de la sede (D-08: falta una Raspberry Pi real)
+- [x] Servidor resuelto: laptop Windows + nginx en Norte, Pi 4 en Sur (D-08, falta validar con el catedrático)
 - [ ] Confirmar direccionamiento WiFi con el catedrático (D-01)
 - [ ] Implementación
 - [ ] Documentación de entrega

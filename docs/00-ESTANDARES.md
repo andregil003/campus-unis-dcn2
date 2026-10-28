@@ -87,12 +87,23 @@ Verificación: `/routing/ospf/neighbor print`.
 
 ---
 
-## E-08 · Servidores
+## E-08 · Servidores (estándar neutral de plataforma)
 
-- Raspberry Pi con IP fija `10.10.0.100`, nginx en puerto 80.
-- Página identificable ("Campus UNIS — Sede Norte") y endpoint `/health` que responda 200.
-- NTP activo (logs con fecha = evidencia en la defensa).
-- **Criterio:** `curl` desde Sede Sur devuelve 200 en menos de 1 s.
+El servidor de cada sede puede ser distinto: **Norte = laptop Windows + nginx**, **Sur = Raspberry Pi 4 + nginx**.
+Por eso el estándar se define por comportamiento observable (detalle en `08-SERVIDOR.md`):
+
+| # | Requisito | Criterio |
+|---|---|---|
+| S-01 | IP fija `10.10.0.100/24` (Norte) / `10.20.0.100/24` (Sur) | responde `ping` |
+| S-02 | nginx en puerto 80 | `curl -I` → `200` |
+| S-03 | Página identificable de la sede | contenido correcto |
+| S-04 | `/health` → `200` con cuerpo `ok` | verificable |
+| S-05 | Alcanzable desde la otra sede | `curl` cruzado en ambos sentidos |
+| S-06 | Arranque automático tras corte de energía | servicio habilitado, sin login manual |
+
+- Prohibido: servidor que dependa de que alguien inicie sesión o abra una ventana.
+- NTP activo en ambas sedes (logs con fecha = evidencia en la defensa).
+- **Criterio global:** `curl` cruzado devuelve 200 en menos de 1 s, en los dos sentidos.
 
 ---
 
