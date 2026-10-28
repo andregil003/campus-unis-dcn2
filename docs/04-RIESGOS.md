@@ -80,16 +80,16 @@ La nota es compartida: si la conectividad inter-sede falla, ambos grupos son pen
 La WAN usa rango CGNAT `100.64.0.0/10` (sin IP pública). No hay port-forwarding posible: cualquier servicio
 debe ser alcanzable **por dentro** del campus (que es justo lo que evalúa el proyecto).
 
-## R-13 · Servidor de la sede — MITIGADO (validación pendiente)
+## R-13 · Servidor de la sede — RESUELTO
 
-El Pico RP2040 **no** puede ser el servidor (microcontrolador sin SO, sin nginx). La sede resuelve el servicio
-con una **laptop Windows + nginx**, que cumple el comportamiento exigido (IP fija, HTTP 200, alcanzable desde
-la otra sede) pero **no es una Raspberry Pi**.
+El Pico RP2040 **no** puede ser servidor (microcontrolador sin SO). La sede resuelve el servicio con una
+**laptop Windows + nginx**, aprobada por el catedrático el 27/10/2026. Sur usa su **Raspberry Pi 4 (2 GB)**.
 
-- **Pendiente:** confirmación del catedrático con una pregunta de una línea (texto listo en `08-SERVIDOR.md` §2.4).
-- **Si dice que no:** Pi prestada del laboratorio o Pi Zero 2 W (costo bajo).
-- **Riesgos propios de Windows:** W-1 firewall, W-2 suspensión, W-3 doble NIC, W-5 arranque automático
-  (detalle y mitigación en `08-SERVIDOR.md` §2.3). El Pico queda libre como extra, nunca como servidor.
+- Artefactos listos en `servidor/` (config Windows, config Linux, página, scripts de verificación).
+- Riesgos propios de Windows (firewall, suspensión, doble NIC, arranque como servicio) mitigados en
+  `08-SERVIDOR.md` §2.3.
+- Respaldo: cualquier computadora con nginx puede ocupar el lugar en ≤ 5 min (`08-SERVIDOR.md` §6).
+- Riesgo residual: **bajo**. Solo queda probar la máquina de respaldo antes de la defensa.
 
 ## R-14 · Sin repuestos de hAP
 
@@ -118,3 +118,4 @@ necesita su propia fuente.
   RB5009, fuente de la Pi y velcro para agrupar el cableado de poder.
 - Si falta una toma, es un punto de falla el día de la defensa: probar el rack completo en el laboratorio
   antes, no en casa.
+

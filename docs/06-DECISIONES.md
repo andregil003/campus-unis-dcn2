@@ -95,7 +95,7 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
 
 ## D-08 · Servidor de la sede: laptop Windows (Norte) + Raspberry Pi 4 (Sur)
 
-- **Estado:** TOMADA — con validación pendiente del catedrático
+- **Estado:** CERRADA — aprobada por el catedrático (27/10/2026)
 - **Contexto:** el enunciado exige una Raspberry Pi con nginx. En Norte no hay SBC: solo un Pico (RP2040) que
   no puede ejecutar nginx. Sur sí dispone de una **Raspberry Pi 4 de 2 GB**.
 - **Decisión:** Sede Norte usa **laptop con Windows + nginx/Windows**; Sede Sur usa su **Pi 4 + nginx**.

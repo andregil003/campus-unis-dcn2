@@ -23,6 +23,7 @@ Valor: **40 puntos** + hasta **5 puntos** de instalación física · Defensa ora
 | [`docs/06-DECISIONES.md`](docs/06-DECISIONES.md) | Registro de decisiones abiertas y tomadas (ADR ligero) |
 | [docs/07-HARDWARE.md](docs/07-HARDWARE.md) | Inventario real, capacidades verificadas y consecuencias de diseño |
 | [docs/08-SERVIDOR.md](docs/08-SERVIDOR.md) | Servidor de sede: estándar neutral S-01…S-06, montaje Windows y Pi 4, pruebas cruzadas |
+| [servidor/](servidor/) | Despliegue portable del servidor: nginx Windows/Linux, página, verificación y procedimiento de respaldo |
 | [`fuentes/`](fuentes/) | Enunciado y diagrama de referencia originales (PDF) |
 
 ---
@@ -50,7 +51,9 @@ Matriz de responsables con doble cobertura en [`docs/05-RESPONSABLES.md`](docs/0
 - [x] Lectura y análisis del enunciado y del diagrama de referencia
 - [x] Estándares, direccionamiento y resultados esperados definidos
 - [x] Inventario de hardware verificado contra ficha técnica
-- [x] Servidor resuelto: laptop Windows + nginx en Norte, Pi 4 en Sur (D-08, falta validar con el catedrático)
+- [x] Servidor resuelto: laptop Windows + nginx en Norte, Pi 4 en Sur (D-08, **aprobado por el catedrático**)
+- [x] Artefactos de despliegue y respaldo del servidor listos (servidor/)
 - [ ] Confirmar direccionamiento WiFi con el catedrático (D-01)
 - [ ] Implementación
 - [ ] Documentación de entrega
+

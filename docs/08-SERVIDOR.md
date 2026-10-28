@@ -1,4 +1,4 @@
-# Servidor de sede — diseño heterogéneo (Norte Windows / Sur Linux)
+﻿# Servidor de sede — diseño heterogéneo (Norte Windows / Sur Linux)
 
 Decisión D-08: **Sede Norte usa una laptop con Windows + nginx**; **Sede Sur usa una Raspberry Pi 4 (2 GB)
 con nginx**. El requisito del curso es que el servidor de cada sede sea alcanzable desde la otra sede y que
@@ -55,13 +55,14 @@ La laptop ocupa el lugar de la Raspberry Pi en el diagrama. **No cambia ninguna 
 | W-7 | Reloj desfasado ⇒ logs sin valor probatorio | Sincronización NTP de Windows activa y zona horaria correcta |
 | W-8 | La laptop no tiene puerto RJ45 | Adaptador USB-Ethernet documentado en el inventario antes de armar el rack |
 
-### 2.4 Lo que hay que preguntarle al catedrático
+### 2.4 Aprobación del catedrático — REGISTRADA
 
-> "El enunciado pide una Raspberry Pi como servidor de la sede. En Sede Norte no tenemos SBC disponible y
-> usaríamos una laptop con nginx (misma IP, mismo servicio HTTP, mismo comportamiento). ¿Es aceptable?"
+Se consultó al Ing. Morales y **la laptop con nginx fue aceptada** como servidor de la sede de Norte.
+Queda constancia de que el requisito se cumple por comportamiento (IP fija, nginx, HTTP 200, `/health`,
+alcanzable desde la otra sede), no por plataforma.
 
-Es una pregunta de una línea, se responde rápido y deja constancia. Si dice que no, se activa la opción B2/B4
-de R-13 (Pi prestada o Pi Zero 2 W).
+La misma autorización habilita el **servidor de respaldo en otra computadora** (ver §6): si el servidor
+titular no arranca, se levanta otra máquina con el mismo estándar y la misma IP.
 
 ---
 
@@ -102,3 +103,22 @@ número uno es el firewall del servidor (W-1 en Norte, `ufw` en Sur).
 - **E-08:** reescrito en términos de comportamiento (S-01…S-06).
 - **R-13:** pasa de "riesgo abierto" a "riesgo mitigado con validación pendiente del catedrático".
 - **Pico RP2040:** queda libre como extra opcional (por ejemplo, semáforo LED del estado OSPF), nunca como servidor.
+
+---
+
+## 6. Servidor de respaldo (cold spare)
+
+Como el estándar es por comportamiento, **cualquier computadora con nginx puede reemplazar al servidor titular**
+en minutos. Los artefactos listos para desplegar viven en la carpeta servidor/ de este repositorio.
+
+| Aspecto | Regla |
+|---|---|
+| Máquina de respaldo | cualquier PC con Windows o Linux (Norte y Sur pueden intercambiar plataforma) |
+| Configuración | copiar servidor/, instalar nginx, aplicar config y página |
+| Dirección | **la misma IP del servidor caído** (10.10.0.100 o 10.20.0.100) |
+| Tiempo objetivo de recuperación | **≤ 5 minutos**, medido en ensayo |
+| Regla de oro | **nunca dos máquinas con la misma IP encendidas a la vez**: primero se desconecta el cable del servidor caído |
+| Requisito previo | la máquina de respaldo se prueba **antes** de la defensa, no se estrena en vivo |
+
+Procedimiento paso a paso: [servidor/README.md](../servidor/README.md) §4.
+Verificación automática: servidor/windows/verificar.ps1 (Windows) o servidor/linux/verificar.sh (Linux).
