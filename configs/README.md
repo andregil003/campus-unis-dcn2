@@ -37,9 +37,12 @@ El orden importa: los hAP necesitan el `ether1` apuntando a un vecino que ya res
 | 5 | GW-A / GW-B | **Fase B** (modo container) | 5 min + reboot |
 | 6 | GW-A / GW-B | **Fase C** (contenedor DNS) | 15 min |
 
-Forma de aplicar: arrastrar el `.rsc` a **Files** del equipo y en la terminal `import file-name=GW-A.rsc`,
-o abrir el archivo y pegar el contenido en la terminal. En ambos casos, **una fase a la vez** y verificar
-antes de seguir.
+Forma de aplicar: **leer [`../docs/10-GUIA-PEGADO.md`](../docs/10-GUIA-PEGADO.md)**. Los `.rsc` están
+divididos en bloques numerados de ≤25 líneas (`# BLOQUE n/5`), con comandos en una sola línea, para pegar
+**un bloque por vez** en WinBox → New Terminal y esperar el prompt antes del siguiente.
+
+> **Regla:** nunca pegar el archivo completo de golpe. WinBox mete caracteres basura en pegados largos.
+> Plan B si el pegado falla: arrastrar el `.rsc` a Files y `/import file-name=GW-A.rsc`.
 
 ## 3. Verificación mínima por equipo
 
