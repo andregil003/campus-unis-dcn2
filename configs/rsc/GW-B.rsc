@@ -99,6 +99,12 @@ add chain=input action=drop comment="DROP final"
 add chain=forward action=accept connection-state=established,related
 add chain=forward action=drop connection-state=invalid
 
+# Conntrack puede dejar la adyacencia OSPF colgada en Init/ExStart (doc oficial,
+# "Basic RAW example"): marcar los paquetes OSPF como untracked lo evita.
+/ip firewall raw
+add chain=prerouting protocol=ospf action=notrack
+add chain=output protocol=ospf action=notrack
+
 # ==================================================================
 # BLOQUE 5/7 · OSPF  --  area 0 + anuncio del default
 # ==================================================================

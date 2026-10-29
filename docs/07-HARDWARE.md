@@ -7,11 +7,26 @@ del fabricante, no contra suposiciones.
 
 | Equipo | Cantidad | Modelo real | Uso asignado |
 |---|---|---|---|
-| MikroTik RB5009 | 2 | `RB5009UG+S+IN` | GW-A (Sede Norte) y GW-B (Sede Sur) |
+| MikroTik RB5009 | 2 | `RB5009UG+S+` (sin PoE-out) | GW-A (Sede Norte) y GW-B (Sede Sur) — ver §1.1 |
 | MikroTik hAP ax lite | **9** | `L41G-2axD` | 5 → anillo Norte · 4 → anillo Sur |
 | Raspberry Pi **Pico** | 1 | RP2040, 264 KB RAM, Cortex-M0+ | **no sirve como servidor nginx** (ver R-13) |
 | Antena SXT Lite5 | 2 | provistas por el catedrático | enlace inter-sede |
 | Raspberry Pi (SBC) | **0** | — | **faltante crítico** (servidor de sede) |
+
+### 1.1 Las dos unidades físicas (verificado con `export`, 28/10/2026)
+
+| Serial | Modelo reportado | RouterOS | Config de fábrica | Rol asignado |
+|---|---|---|---|---|
+| **HFB09DV2C04** | RB5009UG+S+ | **7.24.2** | **limpia** (solo `silent-boot`) | **GW-B (Sur)** — etiquetado `PENDIENTE-SUR` |
+| HFB09D3DPSG | RB5009UG+S+ | **7.18.2** | sucia: `bridgeLocal` con **todos** los puertos + `dhcp-client` | **GW-A (Norte)** → `BLOQUE 0` + actualizar a 7.24.2 |
+
+**Rol decidido por André (28/10/2026):** el equipo que estaba a mano (7.24.2) se etiquetó `PENDIENTE-SUR` y
+se configura primero como **GW-B**. Las dos configuraciones son simétricas, así que el orden no afecta el
+diseño; lo único que cambia es qué equipo necesita trabajo previo.
+
+**Consecuencia de esta asignación:** el equipo de **Norte** (el que hospeda el Pi-hole) es el que está en
+7.18.2, así que **debe** limpiarse con `BLOQUE 0` y actualizarse a 7.24.2 antes de montar el contenedor.
+Con los dos en 7.24.2 se necesita **un solo** `container-7.24.2-arm64.npk` (R-17).
 
 ## 2. Capacidades verificadas
 
