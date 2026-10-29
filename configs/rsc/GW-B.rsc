@@ -66,7 +66,8 @@ set sfp-sfpplus1 comment="libre / reserva"
 /interface list member add list=MGMT interface=ether6
 /interface list member add list=MGMT interface=ether8
 
-/interface bridge add name=lo protocol-mode=none comment=loopback
+# 'lo' ya existe: es el loopback interno de RouterOS (visible desde ~7.14).
+# NO crear un bridge con ese nombre: da 'already have interface with name lo'.
 /ip address add address=10.20.255.1/32 interface=lo comment=loopback-router-id-dns
 
 # ==================================================================

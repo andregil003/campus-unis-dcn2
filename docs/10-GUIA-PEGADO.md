@@ -156,6 +156,7 @@ en la Sede Sur. Los hAP necesitan que su vecino de `ether1` ya esté configurado
 | `input does not match any value of country` | Tu build no reconoce `Guatemala` | Probar `country=guatemala` en minúscula, o quitar el parámetro |
 | `no such item` en `/interface wifi` | El equipo usa el paquete `wireless` viejo (no `wifi`) | Solo en equipos que no son ax lite; el hAP ax **siempre** usa `wifi1` |
 | `failure: already have such address` | Estás re-aplicando | Ignorar: es idempotente donde importa |
+| `failure: already have interface with name lo` | **Normal**: `lo` es el loopback **interno** de RouterOS, visible desde ~7.14 | Ya está corregido en los archivos (no se crea el bridge). La IP `/32` sobre el `lo` existente funciona igual |
 | Después del firewall perdiste WinBox | Te conectaste por un puerto no permitido | Conectar por `ether3`, `ether4` o el WiFi |
 
 ---

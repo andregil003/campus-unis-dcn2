@@ -79,7 +79,10 @@ def bloques(sede_key: str, idx: int):
     ]
     b2 = ["/interface ethernet"] + b2 + [
         "",
-        "/interface bridge add name=lo protocol-mode=none comment=loopback",
+        "# 'lo' ya existe: es el loopback interno de RouterOS (visible desde ~7.14).",
+        "# NO crear un bridge con ese nombre: da 'already have interface with name lo'.",
+        "# Si algun equipo no lo tuviera, crear el reemplazo:",
+        "#   /interface bridge add name=lo-dummy  y  usar interface=lo-dummy",
         f"/ip address add address={loop}/32 interface=lo comment=loopback-router-id",
         "",
         "/ip address",

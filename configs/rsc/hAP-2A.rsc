@@ -32,7 +32,10 @@ set ether2 comment="hAP-2A/ether2 -> hAP-3A/ether1"
 set ether3 comment="hAP-2A/ether3 -> libre"
 set ether4 comment="hAP-2A/ether4 -> puerto de pruebas (opcional)"
 
-/interface bridge add name=lo protocol-mode=none comment=loopback
+# 'lo' ya existe: es el loopback interno de RouterOS (visible desde ~7.14).
+# NO crear un bridge con ese nombre: da 'already have interface with name lo'.
+# Si algun equipo no lo tuviera, crear el reemplazo:
+#   /interface bridge add name=lo-dummy  y  usar interface=lo-dummy
 /ip address add address=10.10.255.12/32 interface=lo comment=loopback-router-id
 
 /ip address
