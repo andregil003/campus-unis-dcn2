@@ -43,7 +43,7 @@ add address=10.20.3.1/30 interface=ether2 comment=hAP-3B
 # BLOQUE 3/5 · WiFi y DHCP  --  SSID, seguridad, bridge, pool y DNS
 # ==================================================================
 /interface wifi security add name=sec-unis authentication-types=wpa2-psk,wpa3-psk passphrase="CambiarClaveWiFi2026"
-/interface wifi configuration add name=cfg-wifi ssid="UNIS-B2" security=sec-unis country=Guatemala band=2ghz-ax channel.frequency=2437 channel.width=20mhz
+/interface wifi configuration add name=cfg-wifi ssid="UNIS-B2" security=sec-unis country=Guatemala channel.band=2ghz-ax channel.frequency=2437 channel.width=20mhz
 /interface wifi set wifi1 configuration=cfg-wifi disabled=no
 
 /interface bridge add name=br-wifi

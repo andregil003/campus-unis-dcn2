@@ -91,7 +91,7 @@ def bloques(sede_key: str, idx: int):
 
     b3 = [
         f'/interface wifi security add name=sec-unis authentication-types=wpa2-psk,wpa3-psk passphrase="{WIFI_PASS}"',
-        f'/interface wifi configuration add name=cfg-wifi ssid="{ssid}" security=sec-unis country=Guatemala band=2ghz-ax channel.frequency={canal} channel.width=20mhz',
+        f'/interface wifi configuration add name=cfg-wifi ssid="{ssid}" security=sec-unis country=Guatemala channel.band=2ghz-ax channel.frequency={canal} channel.width=20mhz',
         "/interface wifi set wifi1 configuration=cfg-wifi disabled=no",
         "",
         "/interface bridge add name=br-wifi",

@@ -9,8 +9,13 @@ configs/
     ├── GW-A.rsc        RB5009 Sede Norte  (WAN, NAT, OSPF ASBR, Pi-hole)
     ├── GW-B.rsc        RB5009 Sede Sur    (coordinación para Grupo B / AdGuard)
     ├── hAP-1A.rsc … hAP-5A.rsc   anillo Norte + red de usuarios
-    └── hAP-1B.rsc … hAP-4B.rsc   anillo Sur
+    ├── hAP-1B.rsc … hAP-4B.rsc   anillo Sur
+    ├── SXT-A.rsc       punta AP del enlace inter-sede (sin IP)
+    └── SXT-B.rsc       punta station-bridge del enlace inter-sede (sin IP)
 ```
+
+**13 equipos de red = 13 archivos.** Los 2 SXT no llevan IP a propósito: son el "cable inalámbrico" entre
+sedes y se administran por MAC (WinBox → Neighbors). Los servidores no van aquí: están en `servidor/`.
 
 ## 1. Antes de empezar (una sola vez)
 

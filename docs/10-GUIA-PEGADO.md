@@ -19,6 +19,24 @@ Sin adivinar nada. Cada equipo tiene su archivo en `configs/rsc/` y aquí está 
 `Connect`. La primera vez entra **sin contraseña** y con la config de fábrica (`192.168.88.1`). No hay que
 resetear nada: al pegar el BLOQUE 1 cambia nombre y clave.
 
+### 1.1 Inventario: qué archivo va en qué equipo (13 equipos)
+
+| # | Equipo | Modelo | Archivo | Rol en la topología |
+|---|---|---|---|---|
+| 1 | GW-A | RB5009UG+S+IN | `configs/rsc/GW-A.rsc` | WAN Norte, NAT, OSPF, Pi-hole |
+| 2 | GW-B | RB5009UG+S+IN | `configs/rsc/GW-B.rsc` | WAN Sur, NAT, OSPF, AdGuard |
+| 3-7 | hAP-1A…5A | hAP ax lite | `configs/rsc/hAP-NA.rsc` | anillo Norte + 5 redes WiFi |
+| 8-11 | hAP-1B…4B | hAP ax lite | `configs/rsc/hAP-NB.rsc` | anillo Sur + 4 redes WiFi |
+| 12 | SXT-A | SXT Lite5 | `configs/rsc/SXT-A.rsc` | punta **AP** del enlace inter-sede |
+| 13 | SXT-B | SXT Lite5 | `configs/rsc/SXT-B.rsc` | punta **station-bridge** del enlace |
+
+**No llevan `.rsc` porque no son MikroTik o no se configuran así:** el servidor Norte (laptop + nginx) y el
+servidor Sur (Pi 4 + nginx) → `servidor/`; el Pico RP2040 → extra opcional.
+
+> Los 2 SXT **no tienen IP a propósito** (D-04): son un cable inalámbrico, las IPs de `10.99.0.0/30` viven en
+> los RB5009. Se administran por MAC desde WinBox → Neighbors. Por eso el `.rsc` activa
+> `discover-interface-list=all`: sin eso, un equipo sin IP no aparece y no hay forma de entrar.
+
 > ⚠️ **Regla de oro del pegado:** un bloque por vez. El prompt tiene que volver
 > (`[admin@GW-A] >`) **antes** de pegar el siguiente. Pegar 80 líneas de golpe es la forma más común de
 > terminar con `bad command name` porque WinBox mete caracteres de más.
@@ -73,7 +91,9 @@ en la Sede Sur. Los hAP necesitan que su vecino de `ether1` ya esté configurado
 | `bad command name` / caracteres raros | El pegado se corrompió | Repegar ese bloque **de a 5 líneas**. Si sigue, usar el plan B (§5) |
 | `no such item` en `set ether4` | Tu hAP tiene menos puertos | Ignorar esa línea y borrar el `bridge port` de `ether4` |
 | `expected end of command` en el bloque WiFi | Tu versión usa otra sintaxis de `wifi` | `/interface wifi print` y adaptar: en 7.13+ es `security` + `configuration` (lo que usa el archivo) |
-| `input does not match any value of band` | Tu build no acepta `2ghz-ax` | Cambiar a `band=2ghz-n` (funciona igual, más lento) |
+| `input does not match any value of band` | El parámetro correcto es `channel.band` | Ya está corregido en los archivos; si lo ves, es que pegaste una versión vieja |
+| `input does not match any value of country` | Tu build no reconoce `Guatemala` | Probar `country=guatemala` en minúscula, o quitar el parámetro |
+| `no such item` en `/interface wifi` | El equipo usa el paquete `wireless` viejo (no `wifi`) | Solo en equipos que no son ax lite; el hAP ax **siempre** usa `wifi1` |
 | `failure: already have such address` | Estás re-aplicando | Ignorar: es idempotente donde importa |
 | Después del firewall perdiste WinBox | Te conectaste por un puerto no permitido | Conectar por `ether3`, `ether4` o el WiFi |
 
@@ -100,7 +120,7 @@ Funciona igual porque los comentarios `#` son válidos en RouterOS, pero pierde 
 | 4 | hAP-3A | `hAP-3A.rsc` | 1-5 | 8 min | 2 vecinos |
 | 5 | hAP-4A | `hAP-4A.rsc` | 1-5 | 8 min | 2 vecinos |
 | 6 | hAP-5A | `hAP-5A.rsc` | 1-5 | 8 min | **GW-A ve 3 vecinos** (anillo cerrado) |
-| 7 | SXT-A / SXT-B | — | — | 15 min | `ap-bridge` / `station-bridge` |
+| 7 | SXT-A / SXT-B | `SXT-A.rsc` / `SXT-B.rsc` | 0-4 | 15 min c/u | `registration-table` con ccq > 90% |
 | 8 | GW-B | `GW-B.rsc` | 1-5 | 15 min | 3 vecinos (incluye GW-A) |
 | 9 | hAP-1B…4B | `hAP-1B.rsc`… | 1-5 | 8 min c/u | 12 adyacencias totales |
 | 10 | Servidor | `servidor/` | — | 20 min | `http://10.10.0.100/health` |
@@ -127,3 +147,32 @@ terminado. Todo lo que sigue (contenedor, servidor, extras) ya no puede romper O
 [ ] volver a enchufar                    -> regresa a GW-A en < 20 s
 [ ] /tool traceroute 8.8.8.8 desde GW-B  -> primer salto 100.64.2.1
 ```
+
+---
+
+## 8. Verificación contra la documentación oficial (28/10/2026)
+
+Todo lo que se pudo contrastar se contrastó contra `help.mikrotik.com` (docs de `/routing/ospf` y del
+paquete WiFi 6), no contra memoria.
+
+| Qué se verificó | Resultado |
+|---|---|
+| `/routing ospf instance originate-default=if-installed` | ✅ existe en v7 (`always \| if-installed \| never`) y es el mecanismo correcto para failover |
+| `/routing ospf area instance=` | ✅ `instance` es **obligatorio** — el archivo lo usa bien |
+| `interface-template`: `interfaces`, `area`, `type=ptp`, `cost`, `hello-interval`, `dead-interval`, `passive` | ✅ los 7 parámetros existen con esos nombres exactos |
+| `type=ptp` en enlaces /30 | ✅ es el tipo recomendado para punto a punto (no elige DR/BDR) |
+| `/interface wifi security … authentication-types=wpa2-psk,wpa3-psk passphrase=` | ✅ correcto |
+| `/interface wifi configuration … ssid / security / country / mode` | ✅ correcto (`mode` es `ap` por defecto) |
+| **`band=` en la configuración WiFi** | ❌ **BUG ENCONTRADO:** el parámetro real es `channel.band=` (el `band` suelto solo existe en el menú `/interface wifi channel`). **Corregido en los 9 hAP** |
+| `channel.frequency` / `channel.width` | ✅ correctos, con `frequency` en MHz (2412/2437/2462) |
+| `/interface veth address= gateway=` + `/ip address` en el extremo del host | ✅ patrón correcto (el `address` es del contenedor, el router necesita su propia IP) |
+| `device-mode update container=yes` → confirmar con **reset físico** o cold reboot | ✅ confirmado en la doc de Container |
+| `#` como comentario al pegar | ✅ válido ("A comment starts with a hash character and ends at the end of the line") |
+
+**Lo que no se puede verificar sin el equipo y hay que probar en el laboratorio:**
+
+1. Que `country=Guatemala` exista en la tabla regulatoria de ese build (si falla, §4).
+2. Nombre exacto del disco para `root-dir=` (`/disk print`).
+3. Que el `hAP ax lite` acepte `2ghz-ax` (su radio es 802.11ax, debería; si no, `2ghz-n`).
+4. `SXT Lite5`: confirmar que la versión de RouterOS que trae soporta `station-bridge`
+   (sí en v6 y v7; es lo que exige el diseño L2 transparente).
