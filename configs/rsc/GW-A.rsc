@@ -20,6 +20,22 @@
 
 
 # ==================================================================
+# BLOQUE 0/7 · Limpieza de la configuracion de fabrica
+# ==================================================================
+# Este equipo viene con la config por defecto: TODOS los puertos dentro de
+# un bridge llamado bridgeLocal + un cliente DHCP sobre ese bridge.
+# Si no se borra, las IPs de ether1/2/3/7 quedan en puertos esclavos del
+# bridge y el ruteo no funciona. Es idempotente: si ya esta limpio, no
+# hace nada y no da error.
+/ip dhcp-client remove [find]
+/interface bridge port remove [find bridge=bridgeLocal]
+/interface bridge remove [find name=bridgeLocal]
+# Verificar antes de seguir:
+#   /interface bridge print          -> vacio
+#   /interface ethernet print        -> ether1..ether8 SIN la letra S (slave)
+#   /ip address print                -> vacio (o solo 192.168.88.1: borrarla a mano)
+
+# ==================================================================
 # BLOQUE 1/7 · Sistema  --  identidad, clave, hora, servicios y IPv6
 # ==================================================================
 /system identity set name=GW-A

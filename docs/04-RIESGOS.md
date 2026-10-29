@@ -119,3 +119,16 @@ necesita su propia fuente.
 - Si falta una toma, es un punto de falla el día de la defensa: probar el rack completo en el laboratorio
   antes, no en casa.
 
+
+## R-17 - Los dos RB5009 estan en versiones distintas de RouterOS
+
+GW-A reporta **7.18.2** y GW-B **7.24.2** (verificado en el export del 28/10/2026). No rompe nada hoy,
+pero introduce dos problemas concretos:
+
+- El paquete `container-<version>-arm64.npk` debe coincidir **exactamente** con la version del equipo:
+  con versiones distintas hacen falta dos archivos y es un error facil de cometer en plena defensa.
+- Una diferencia de 6 versiones menores entre los dos GW es una variable que nadie quiere explicando un
+  fallo en vivo (comportamiento de OSPF, del firewall o del wifi puede variar).
+
+- **Accion:** actualizar GW-A a 7.24.2 y verificar la version de los 9 hAP y de los 2 SXT antes de armar el
+  rack. Registrar la version final de los 13 equipos en `07-HARDWARE.md`.

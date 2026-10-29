@@ -20,6 +20,16 @@
 
 
 # ==================================================================
+# BLOQUE 0/7 · Limpieza de la configuracion de fabrica
+# ==================================================================
+# Si el equipo trae bridgeLocal con todos los puertos, borrarlo primero.
+# Idempotente: si ya esta limpio no hace nada.
+/ip dhcp-client remove [find]
+/interface bridge port remove [find bridge=bridgeLocal]
+/interface bridge remove [find name=bridgeLocal]
+# Verificar: /interface bridge print -> vacio | /ip address print -> vacio
+
+# ==================================================================
 # BLOQUE 1/7 · Sistema
 # ==================================================================
 /system identity set name=GW-B

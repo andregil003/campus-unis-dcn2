@@ -37,6 +37,67 @@ servidor Sur (Pi 4 + nginx) → `servidor/`; el Pico RP2040 → extra opcional.
 > los RB5009. Se administran por MAC desde WinBox → Neighbors. Por eso el `.rsc` activa
 > `discover-interface-list=all`: sin eso, un equipo sin IP no aparece y no hay forma de entrar.
 
+### 1.2 ¿Dónde se pega y dónde se verifica?
+
+**Para pegar:** WinBox → menú izquierdo **New Terminal** (o el botón `>_` de la barra superior).
+**No** uses `System → Scripts`: ahí el texto queda guardado como script y no se ejecuta en el momento.
+
+**Para verificar** hay tres niveles, de menos a más:
+
+| Nivel | Cómo | Para qué |
+|---|---|---|
+| 1 · Rápido | Los comandos `print` que están al final de cada bloque | Confirmar que ese bloque quedó bien antes de seguir |
+| 2 · Medio | `/export terse` | Ver toda la config viva del equipo en una pantalla; se puede pegar en el chat para que yo la compare |
+| 3 · Exacto | `/export file=check` → descargar `check.rsc` por WinBox → comparar con el archivo del repo | Auditoría final antes de la defensa |
+
+> `/export` **no** va a salir idéntico al `.rsc`: RouterOS no escribe lo que está en valor por defecto y
+> ordena los bloques distinto. Sirve para confirmar que están las piezas, no para un diff literal.
+
+**Las 4 verificaciones que de verdad importan (por equipo):**
+
+```
+/interface bridge print                 -> los bridges esperados, sin bridgeLocal
+/ip address print                       -> las IPs del equipo, cada una en SU puerto
+/ip route print where dst-address=0.0.0.0/0
+                                        -> GW: estática distance=1 | hAP: OSPF distance=110
+/routing ospf neighbor print            -> GW: 3 Full | hAP: 2 Full
+```
+
+### 1.3 Limpiar la config de fábrica (BLOQUE 0)
+
+Los RB5009 **no vienen limpios**: salen con un `bridgeLocal` que contiene **todos** los puertos
+(`ether1…ether8` + `sfp-sfpplus1`) y un `dhcp-client` sobre ese bridge. Si pegás la config sin borrar eso,
+las IPs de `ether1/2/3/7` caen en puertos **esclavos** del bridge y el ruteo no funciona.
+
+```
+/ip dhcp-client remove [find]
+/interface bridge port remove [find bridge=bridgeLocal]
+/interface bridge remove [find name=bridgeLocal]
+```
+
+Es idempotente (si ya está limpio, no hace nada). Después: `/interface ethernet print` debe mostrar
+`ether1…ether8` **sin** la letra `S` (slave) y `/interface bridge print` debe estar vacío.
+
+> Si preferís empezar de cero absoluto: `/system reset-configuration no-defaults=yes skip-backup=yes`
+> (borra todo, incluida la IP, y se vuelve a entrar por MAC desde WinBox → Neighbors).
+
+### 1.4 Versiones: los dos RB5009 NO están iguales
+
+| Equipo | Serial | RouterOS | Acción |
+|---|---|---|---|
+| GW-A | HFB09D3DPSG | **7.18.2** | actualizar a 7.24.2 |
+| GW-B | HFB09DV2C04 | **7.24.2** | dejar |
+
+Unificar en **7.24.2** (la más nueva, con `veth`/`container` maduros). Razones: el paquete
+`container-<version>-arm64.npk` tiene que ser **exactamente** la versión del equipo — con versiones
+distintas necesitás dos `.npk` y es un error fácil de cometer el día de la defensa. Y una diferencia de
+6 versiones menores entre los dos GW es una variable que no querés explicando un fallo en vivo.
+
+**Faltan las versiones de los 9 hAP** (`/system resource print` en cada uno). Si alguno está por debajo de
+7.16, el bloque del contenedor no aplica y hay que actualizarlo.
+
+---
+
 > ⚠️ **Regla de oro del pegado:** un bloque por vez. El prompt tiene que volver
 > (`[admin@GW-A] >`) **antes** de pegar el siguiente. Pegar 80 líneas de golpe es la forma más común de
 > terminar con `bad command name` porque WinBox mete caracteres de más.
