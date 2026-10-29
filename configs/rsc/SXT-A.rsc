@@ -27,7 +27,7 @@
 # BLOQUE 1/4 · Sistema
 # ==================================================================
 /system identity set name=SXT-A
-/user set admin password="CambiarClaveAdmin2026"
+/user set admin password="ValoValoValo2026"
 /system clock set time-zone-name=America/Guatemala
 /system note set show-at-login=no note="DCN2 Campus UNIS - SXT-A punta Norte (enlace inter-sede)"
 /system ntp client set enabled=yes servers=pool.ntp.org

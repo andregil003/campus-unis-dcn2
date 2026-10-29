@@ -118,6 +118,23 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
 
 ---
 
+## D-12 · Claves en texto plano y repositorio público
+
+- **Estado:** TOMADA (André, 29/10/2026)
+- **Contexto:** los `.rsc` se pegan tal cual en la terminal, así que la clave de `admin` y el PSK del WiFi
+  viajan dentro de los archivos. André pidió además que el repo sea **público** para poder mostrar el
+  trabajo (defensa y portafolio).
+- **Decisión:** clave de `admin` única y **igual en los 13 equipos**: `ValoValoValo2026`, escrita en los
+  `.rsc` que se pegan. Repositorio `campus-unis-dcn2` **público**.
+- **Consecuencia:** cualquiera que abra el repo ve la topología completa, la clave del `admin` y el PSK del
+  WiFi. Se acepta porque es un entorno de **laboratorio académico** y las claves se pueden rotar sin costo.
+- **Riesgo residual:** una vez publicada, la clave queda en el **historial de git** de forma permanente.
+  Ocultarla después exige reescribir la historia (`git filter-repo`) y rotar la clave en los 13 equipos.
+  Si el diseño se reutilizara fuera del laboratorio, mover las claves a un archivo fuera del repo.
+- **Decisor:** André.
+
+---
+
 ## Plantilla
 
 ```

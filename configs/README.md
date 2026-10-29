@@ -23,7 +23,7 @@ sedes y se administran por MAC (WinBox → Neighbors). Los servidores no van aqu
    que requieren ≥ 7.16). `hAP ax lite` y `RB5009` son **arm64** → bajar el paquete `container-<ver>-arm64.npk`
    de `download.mikrotik.com` y subirlo a la raíz de Files.
 2. Cambiar en los archivos **antes de pegar**:
-   - `CambiarClaveAdmin2026` → clave real de admin.
+   - `ValoValoValo2026` → clave real de admin.
    - `CambiarClaveWiFi2026` → clave real del WiFi (mínimo 8 caracteres, WPA2/WPA3).
    - `CambiarClavePihole2026` → clave del panel de Pi-hole.
 3. Confirmar la IP del ISP (`100.64.1.1` / `100.64.2.1`). Si el catedrático entrega otro gateway,

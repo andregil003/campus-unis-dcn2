@@ -16,7 +16,7 @@
 # BLOQUE 1/5 · Sistema  --  identidad, clave, hora, servicios y IPv6
 # ==================================================================
 /system identity set name=hAP-3B
-/user set admin password="CambiarClaveAdmin2026"
+/user set admin password="ValoValoValo2026"
 /system clock set time-zone-name=America/Guatemala
 /system note set show-at-login=no note="DCN2 Campus UNIS - Sede Sur - hAP-3B"
 /system ntp client set enabled=yes servers=pool.ntp.org

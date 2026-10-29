@@ -45,7 +45,7 @@ SEDES = {
 }
 
 WIFI_PASS = "CambiarClaveWiFi2026"
-ADMIN_PASS = "CambiarClaveAdmin2026"
+ADMIN_PASS = "ValoValoValo2026"
 
 
 def bloques(sede_key: str, idx: int):

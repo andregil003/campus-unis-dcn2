@@ -39,7 +39,7 @@
 # BLOQUE 1/7 · Sistema  --  identidad, clave, hora, servicios y IPv6
 # ==================================================================
 /system identity set name=GW-A
-/user set admin password="CambiarClaveAdmin2026"
+/user set admin password="ValoValoValo2026"
 /system clock set time-zone-name=America/Guatemala
 /system note set show-at-login=no note="DCN2 Campus UNIS - Sede Norte - GW-A (RB5009)"
 /system ntp client set enabled=yes servers=pool.ntp.org

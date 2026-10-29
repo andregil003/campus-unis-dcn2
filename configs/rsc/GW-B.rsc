@@ -33,7 +33,7 @@
 # BLOQUE 1/7 · Sistema
 # ==================================================================
 /system identity set name=GW-B
-/user set admin password="CambiarClaveAdmin2026"
+/user set admin password="ValoValoValo2026"
 /system clock set time-zone-name=America/Guatemala
 /system note set show-at-login=no note="DCN2 Campus UNIS - Sede Sur - GW-B (RB5009)"
 /system ntp client set enabled=yes servers=pool.ntp.org
