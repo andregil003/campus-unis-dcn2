@@ -77,11 +77,12 @@ inter-sede `10.99.0.0/30`, WANs `100.64.1.0/30` y `100.64.2.0/30`.
 | Tipo de enlace | Costo | Motivo |
 |---|---|---|
 | Ethernet 1 Gbps (anillo) | **10** | todos iguales ⇒ la topología de anillo decide el camino |
-| Enlace inter-sede (SXT, 100 Mbps) | **1000** | fuerza preferencia local y evita ECMP con el default remoto |
+| Enlace inter-sede (SXT, 100 Mbps) | **100** | fuerza preferencia local y evita ECMP con el default remoto |
 | Loopback / WiFi / LAN servidor | passive | se anuncian, no forman adyacencia |
 
-Consecuencia buscada: el default local llega con métrica **10** y el remoto con **1010**,
-de modo que la Regla 1 se cumple por diseño, no por suerte.
+Consecuencia buscada: el default local llega con métrica **10** y el remoto con **110**,
+de modo que la Regla 1 se cumple por diseño, no por suerte. El valor 100 es suficiente porque el peor
+camino intra-anillo (4 saltos con un enlace caído) es 40.
 
 ---
 

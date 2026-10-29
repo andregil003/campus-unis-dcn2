@@ -4,9 +4,10 @@
 Catedrático: Ing. Gustavo Adolfo Morales Xitamul
 Valor: **40 puntos** + hasta **5 puntos** de instalación física · Defensa oral presencial en semana 15.
 
-> Este repositorio **no contiene configuración**: contiene los estándares que el equipo se compromete a
-> cumplir, el direccionamiento congelado, los resultados medibles, los riesgos conocidos y el inventario real.
-> La configuración vive en el equipo físico (ver `docs/00-ESTANDARES.md` §E-09).
+> Este repositorio contiene los estándares que el equipo se compromete a cumplir, el direccionamiento
+> congelado, los resultados medibles, los riesgos conocidos, el inventario real **y la configuración como
+> código** (`configs/`), versionada y regenerable. El equipo físico es la fuente de verdad final
+> (ver `docs/00-ESTANDARES.md` §E-09): si hay diferencia, gana el router y se corrige el repo.
 
 ---
 
@@ -23,6 +24,8 @@ Valor: **40 puntos** + hasta **5 puntos** de instalación física · Defensa ora
 | [`docs/06-DECISIONES.md`](docs/06-DECISIONES.md) | Registro de decisiones abiertas y tomadas (ADR ligero) |
 | [docs/07-HARDWARE.md](docs/07-HARDWARE.md) | Inventario real, capacidades verificadas y consecuencias de diseño |
 | [docs/08-SERVIDOR.md](docs/08-SERVIDOR.md) | Servidor de sede: estándar neutral S-01…S-06, montaje Windows y Pi 4, pruebas cruzadas |
+| [`docs/09-REVISION-CONFIG.md`](docs/09-REVISION-CONFIG.md) | Revisión de las configs del compañero: 4 bloqueantes, 9 importantes y cómo quedaron |
+| [configs/](configs/) | Configuración RouterOS v7 de los 11 equipos + generador de los hAP |
 | [servidor/](servidor/) | Despliegue portable del servidor: nginx Windows/Linux, página, verificación y procedimiento de respaldo |
 | [`fuentes/`](fuentes/) | Enunciado y diagrama de referencia originales (PDF) |
 
@@ -53,7 +56,9 @@ Matriz de responsables con doble cobertura en [`docs/05-RESPONSABLES.md`](docs/0
 - [x] Inventario de hardware verificado contra ficha técnica
 - [x] Servidor resuelto: laptop Windows + nginx en Norte, Pi 4 en Sur (D-08, **aprobado por el catedrático**)
 - [x] Artefactos de despliegue y respaldo del servidor listos (servidor/)
-- [ ] Confirmar direccionamiento WiFi con el catedrático (D-01)
-- [ ] Implementación
+- [x] Revisión de las configs del compañero + correcciones (docs/09)
+- [x] 11 configuraciones RouterOS v7 generadas y versionadas (configs/)
+- [ ] Confirmar direccionamiento WiFi con el catedrático (D-01, implementado en `10.10.11-15.0/24`)
+- [ ] Implementación en el equipo físico
 - [ ] Documentación de entrega
 

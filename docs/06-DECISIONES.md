@@ -6,15 +6,17 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
 
 ## D-01 · Direccionamiento de las redes WiFi
 
-- **Estado:** ABIERTA — requiere confirmación del catedrático
+- **Estado:** TOMADA — opción A, con fallback a B en 2 minutos (decisión de PUCK, 28/10/2026)
 - **Contexto:** el enunciado dice que Sede Norte opera en `10.10.0.0/8`; el diagrama de referencia usa
   `192.168.1-5.0/24`, fuera de ese bloque (ver R-01).
 - **Opciones:**
   - **A (recomendada):** `10.10.11.0/24` … `10.10.15.0/24`. Cumple la regla escrita, no colisiona con las /30
     ni con `10.10.0.0/24`, y deja espacio limpio para crecer.
   - **B:** `192.168.1.0/24` … `192.168.5.0/24`. Copia literal del diagrama; riesgo de objeción por la regla /8.
+- **Decisión:** A. Se implementa `10.10.11-15.0/24`; si el catedrático objeta, se regeneran los hAP con
+  `configs/generar-haps.py` cambiando la columna WiFi (2 minutos, sin tocar GW-A ni OSPF).
 - **Consecuencia de A:** la tabla de `01-TABLA-IPs.md` queda vigente tal como está escrita.
-- **Decisor:** André + catedrático (Ing. Morales).
+- **Decisor:** André delegó la decisión en PUCK; validación final con el Ing. Morales en clase.
 
 ---
 
@@ -34,8 +36,9 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
 - **Estado:** TOMADA (pendiente de validación en laboratorio)
 - **Contexto:** la Regla 1 prohíbe que el tráfico cruce el enlace inter-sede con la WAN activa, y la Regla 6
   prohíbe el ruteo estático como solución principal.
-- **Decisión:** cada GW anuncia su default por OSPF con métrica 10; el inter-sede tiene costo 1000, de modo que
-  el default remoto llega con 1010 y solo se usa cuando el propio desaparece.
+- **Decisión:** cada GW tiene una estática `distance=1 check-gateway=arp` hacia el ISP y la anuncia por OSPF
+  con `originate-default=if-installed`; el inter-sede tiene costo 100, de modo que el default remoto llega
+  con 110 y solo se usa cuando el propio desaparece.
 - **Consecuencia:** cero ECMP, cumplimiento de Regla 1 por diseño, y failover sin intervención manual.
 
 ---
@@ -46,7 +49,7 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
 - **Contexto:** los SXT deben ser transparentes para OSPF (R-03).
 - **Decisión:** SXT-A en `ap-bridge`, SXT-B en `station-bridge` (o WDS dinámico). IPs de `10.99.0.0/30` en los
   RB5009, no en las antenas.
-- **Consecuencia:** un solo dominio de broadcast en el enlace; OSPF lo trata como punto a punto con costo 1000.
+- **Consecuencia:** un solo dominio de broadcast en el enlace; OSPF lo trata como punto a punto con costo 100.
 
 ---
 
@@ -61,10 +64,57 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
 
 ## D-06 · Alcance de los extras
 
-- **Estado:** ABIERTA
-- **Contexto:** hay margen para Tier 1 (BFD, ntfy, dashboard, TLS) sin riesgo apreciable.
-- **Opciones:** solo lo que da puntos / Tier 1 completo / Tier 1 + parte del Tier 2.
-- **Decisor:** André.
+- **Estado:** TOMADA — Tier 1 acotado (PUCK, 28/10/2026)
+- **Contexto:** hay margen para extras, pero cada uno consume tiempo de la fase crítica (armado + ensayo).
+- **Decisión — se hace:**
+  1. Etiquetas de cableado en cada puerto (`comment`) — ya incluidas en las 11 configs.
+  2. `dst-nat` DNS anti-bypass hacia Pi-hole/AdGuard — ya incluidas en los GW.
+  3. Netwatch opcional documentado para detectar "ISP caído con cable arriba" (R-07).
+  4. Página `/health` del servidor (ya implementada en `servidor/`).
+- **No se hace salvo que sobre tiempo:** BFD (los timers 2s/8s dan ~8 s de convergencia), ntfy,
+  TLS en el servidor, dashboard grafana.
+- **Consecuencia:** los extras no bloquean la ruta crítica; se documentan como puntos de la defensa oral.
+
+---
+
+## D-09 · Orden del anillo: secuencial 1→2→3→4→5→GW
+
+- **Estado:** TOMADA (PUCK, 28/10/2026)
+- **Contexto:** el `.rsc` de GW-A asume `ether3 → hAP-5A` con `10.10.6.0/30`, y el `.docx` de Fletes
+  encadena `1-2-5-3-4` cerrando en hAP-4A, dejando `10.10.6.0/30` sin usar (bloqueante B1).
+- **Decisión:** orden **secuencial**: `GW-A ↔ hAP-1A ↔ hAP-2A ↔ hAP-3A ↔ hAP-4A ↔ hAP-5A ↔ GW-A`.
+  La subred `10.10.N.0/30` es siempre el enlace entre el nodo `N-1` y el nodo `N`, y `10.10.6.0/30`
+  cierra el anillo contra GW-A.
+- **Consecuencia:** los 6 bloques /30 quedan usados, las etiquetas son predecibles y solo hay que corregir
+  el encadenamiento del `.docx`; el `.rsc` de GW-A ya era correcto y no cambia.
+
+---
+
+## D-10 · Esquema de servidor y contenedor (resuelve R-02)
+
+- **Estado:** TOMADA (PUCK, 28/10/2026)
+- **Contexto:** `10.10.0.0/24` aparecía a la vez en GW-A y en el servidor, y el servidor no tenía puerto
+  asignado en el `.docx` (bloqueante B2).
+- **Decisión:**
+  - `10.10.0.0/24` vive **solo** en `hAP-1A ether3` (`10.10.0.1/24`), con el servidor en `10.10.0.100/24`.
+  - GW-A **no** tiene interfaz en esa red: no hace falta, llega por OSPF.
+  - Contenedor en `10.10.254.0/24` sobre un `veth` (contenedor `.53`, router `.1`), **sin bridge**.
+  - El DNS del campus se entrega como `10.10.255.1` (loopback del GW), que reenvía al Pi-hole.
+- **Consecuencia:** desaparece el `bridge-lan` de GW-A y su IP `.1/24` duplicada; la IP exigida
+  `10.10.0.100` sigue válida y ahora tiene un puerto físico real.
+
+---
+
+## D-11 · Costo inter-sede 100 y timers OSPF
+
+- **Estado:** TOMADA (PUCK, 28/10/2026)
+- **Contexto:** el diseño original usaba costo 1000 (documentado); Fletes usó 100. Con 100 el resultado es
+  el mismo y hay menos desviación respecto del trabajo ya hecho.
+- **Decisión:** inter-sede = **100**; anillo = 10. Timers: anillo `hello=2s dead=8s` (Ethernet),
+  inter-sede `hello=5s dead=20s` (wireless, más tolerante).
+- **Consecuencia:** default local 10 vs remoto 110 ⇒ sin ECMP; el peor camino intra-anillo (40) sigue siendo
+  menor que 100, así que un enlace caído nunca hace que el tráfico salga por la otra sede.
+  Convergencia del anillo ~8 s, dentro del objetivo interno ≤10 s y del límite de 30 s del curso.
 
 ---
 

@@ -35,7 +35,9 @@ Sin excepciones: si el ing. pide "mostrame hAP-3A", el prompt debe decir `hAP-3A
 - `router-id` manual = loopback (`10.10.255.x`). Nunca automático.
 - Enlaces /30 declarados como **point-to-point**.
 - WiFi, loopbacks y la LAN del servidor: **passive interface** (se anuncian, no forman vecinos).
-- Costos deterministas: **1 Gbps = 10**, **100 Mbps (SXT) = 100**, **inter-sede = 1000**.
+- Costos deterministas: **1 Gbps = 10**, **inter-sede = 100**.
+  El peor camino posible dentro de un anillo (4 saltos = 40, caso de enlace caído) sigue siendo menor que 100,
+  así que 100 ya garantiza preferencia local sin ECMP. Los SXT son L2: no tienen costo propio.
 - Prohibido resolver el tráfico interno con rutas estáticas (Regla 6).
 
 **Criterio de aceptación:** GW-A ve **3 vecinos en Full** (hAP-1A, hAP-5A, GW-B); cada hAP ve 2;
@@ -56,8 +58,9 @@ Verificación: `/routing/ospf/neighbor print`.
 
 ## E-05 · Failover y restauración
 
-- Cada GW anuncia default por OSPF (`distribute-default=if-installed`, métrica 10).
-- El default de la sede vecina llega con la métrica del enlace inter-sede sumada (10 + 1000 = **1010**),
+- Cada GW anuncia default por OSPF (`originate-default=if-installed`) y tiene una estática `distance=1`
+  `check-gateway=arp` hacia el ISP. La estática siempre gana sobre OSPF (110).
+- El default de la sede vecina llega con la métrica del enlace inter-sede sumada (10 + 100 = **110**),
   por lo que **nunca** se usa mientras la WAN propia está viva.
 - Cable WAN desconectado ⇒ link down ⇒ se retira la ruta conectada ⇒ se retira el default propio ⇒
   entra el default remoto.
