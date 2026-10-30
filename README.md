@@ -58,7 +58,8 @@ Matriz de responsables con doble cobertura en [`docs/05-RESPONSABLES.md`](docs/0
 - [x] Artefactos de despliegue y respaldo del servidor listos (servidor/)
 - [x] Revisión de las configs del compañero + correcciones (docs/09)
 - [x] 11 configuraciones RouterOS v7 generadas y versionadas (configs/)
-- [ ] Confirmar direccionamiento WiFi con el catedrático (D-01, implementado en `10.10.11-15.0/24`)
+- [x] WiFi alineado al diagrama v3: `192.168.1-5.0/24` (Norte) / `192.168.11-14.0/24` (Sur)
+  — D-01 revisada 30/10/2026. Falta confirmar la red del laboratorio
 - [ ] Implementación en el equipo físico
 - [ ] Documentación de entrega
 

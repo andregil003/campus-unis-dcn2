@@ -6,17 +6,27 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
 
 ## D-01 · Direccionamiento de las redes WiFi
 
-- **Estado:** TOMADA — opción A, con fallback a B en 2 minutos (decisión de PUCK, 28/10/2026)
-- **Contexto:** el enunciado dice que Sede Norte opera en `10.10.0.0/8`; el diagrama de referencia usa
-  `192.168.1-5.0/24`, fuera de ese bloque (ver R-01).
-- **Opciones:**
-  - **A (recomendada):** `10.10.11.0/24` … `10.10.15.0/24`. Cumple la regla escrita, no colisiona con las /30
-    ni con `10.10.0.0/24`, y deja espacio limpio para crecer.
-  - **B:** `192.168.1.0/24` … `192.168.5.0/24`. Copia literal del diagrama; riesgo de objeción por la regla /8.
-- **Decisión:** A. Se implementa `10.10.11-15.0/24`; si el catedrático objeta, se regeneran los hAP con
-  `configs/generar-haps.py` cambiando la columna WiFi (2 minutos, sin tocar GW-A ni OSPF).
-- **Consecuencia de A:** la tabla de `01-TABLA-IPs.md` queda vigente tal como está escrita.
-- **Decisor:** André delegó la decisión en PUCK; validación final con el Ing. Morales en clase.
+- **Estado:** REVISADA el 30/10/2026 — se adopta la **opción B**, alineada al diagrama de referencia v3
+- **Contexto:** el diagrama del catedrático (`fuentes/diagrama-referencia-campus-unis-v3.pdf`) dibuja el WiFi
+  en `192.168.1-5.0/24` (Norte) y `192.168.11-14.0/24` (Sur), con el gateway en `.1`. El texto del enunciado
+  pide las subredes internas en `10.10.0.0/8` / `10.20.0.0/8` (ver R-01).
+- **Cambio de criterio:** la decisión del 28/10/2026 implementaba `10.10.11-15.0/24`; el equipo lo observó
+  en la revisión del 30/10/2026 y se alinea con el diagrama.
+- **Decisión:** WiFi **exactamente como el diagrama v3**:
+  - Norte: hAP-1A `192.168.1.1/24`, hAP-2A `192.168.2.1/24`, hAP-3A `192.168.3.1/24`,
+    hAP-4A `192.168.4.1/24`, hAP-5A `192.168.5.1/24`.
+  - Sur: hAP-1B `192.168.11.1/24`, hAP-2B `192.168.12.1/24`, hAP-3B `192.168.13.1/24`,
+    hAP-4B `192.168.14.1/24`.
+  - Pool por nodo `192.168.N.10 – 192.168.N.250`, gateway `192.168.N.1`, DNS = loopback del GW de la sede.
+- **Por qué es seguro:** las redes WiFi son `passive` en OSPF: no forman vecinos ni tocan el failover,
+  el DNS ni el NAT. El cambio son los 9 bloques 3/5 (WiFi y DHCP) y nada más.
+- **Lo que NO cambia:** anillo `10.10.1-6.0/30` y `10.20.1-5.0/30`, inter-sede `10.99.0.0/30`, LAN del
+  servidor `10.10.0.0/24` / `10.20.0.0/24`, contenedores `10.10.254.0/24` / `10.20.254.0/24` y loopbacks.
+  La regla del bloque `/8` se sigue cumpliendo en todo lo que enruta el campus.
+- **Riesgo abierto:** si el DHCP del laboratorio (puerto `e1` del router del catedrático) usa `192.168.1-14`,
+  habría solapamiento. Confirmarlo antes del ensayo; si choca, se vuelve a la opción A regenerando los hAP
+  en 2 minutos (`configs/generar-haps.py`).
+- **Decisor:** André (30/10/2026), a partir del reporte del equipo.
 
 ---
 

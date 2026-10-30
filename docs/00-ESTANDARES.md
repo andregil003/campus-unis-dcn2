@@ -14,11 +14,12 @@ antes de considerarse "listos para ensayo".
 | `10.99.0.0/30` | Enlace inter-sede | `.1` GW-A, `.2` GW-B · **las IPs van en los RB5009, no en los SXT** |
 | `10.10.1.0/30` … `10.10.6.0/30` | Los 6 enlaces del anillo Norte | una /30 por enlace, sin bridges |
 | `10.10.0.0/24` | Solo enlace hAP-1A `ether3` ↔ Raspberry Pi | hAP-1A `.1`, Pi `.100` |
-| `10.10.11-15.0/24` | WiFi de hAP-1A…hAP-5A | ver D-01 en `06-DECISIONES.md` |
+| `192.168.1-5.0/24` | WiFi de hAP-1A…hAP-5A (GW `192.168.N.1`) | ver D-01 en `06-DECISIONES.md` |
 | `10.10.254.0/24` | veth del container Pi-hole | Pi-hole `.53`, GW-A veth `.1` |
 | `10.10.255.1/32` | Loopback GW-A = router-id = IP de DNS del DHCP | — |
 
-**Criterio de aceptación:** cero subredes solapadas, cero /30 desperdiciada, cero IP fuera del bloque asignado.
+**Criterio de aceptación:** cero subredes solapadas, cero /30 desperdiciada, cero IP fuera del bloque
+asignado (excepción declarada: las `/24` de WiFi siguen el diagrama v3 — D-01).
 
 ---
 
@@ -83,7 +84,7 @@ Verificación: `/routing/ospf/neighbor print`.
 
 ## E-07 · WiFi y DHCP
 
-- SSID `UNIS-N1` … `UNIS-N5`, WPA2/WPA3 PSK (≥12 caracteres), clave única por sede.
+- SSID `UNIS-A1` … `UNIS-A5` (Sur: `UNIS-B1` … `UNIS-B4`), WPA2/WPA3 PSK (≥12 caracteres), clave única por sede.
 - Un /24 por nodo, DHCP en el propio hAP, gateway = el hAP, **sin NAT**, DNS = GW-A.
 - IPv6 deshabilitado (o habilitado de forma consistente en todo el campus; nunca a medias).
 - hAP ax lite usa `/interface/wifi` (paquete *wifi*), **no** `/interface/wireless`.

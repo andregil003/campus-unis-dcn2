@@ -58,7 +58,7 @@ divididos en bloques numerados de ≤25 líneas (`# BLOQUE n/5`), con comandos e
 | hAP | `/ip firewall nat print` | **vacío** (Regla 8) |
 | hAP | `/ip route print where dst-address=0.0.0.0/0` | default vía OSPF, `distance=110` |
 | GW | `/ip route print where dst-address=0.0.0.0/0` | estática `distance=1` activa |
-| Cliente | `ipconfig /all` | IP de `10.10.1x.0/24`, gateway `.1`, DNS `10.10.255.1` |
+| Cliente | `ipconfig /all` | IP de `192.168.N.0/24`, gateway `192.168.N.1`, DNS `10.10.255.1` |
 | Cliente | `ping 10.10.0.100` | responde (servidor de la sede) |
 | Cliente Sur | `ping 10.10.0.100` | responde a través del inter-sede |
 

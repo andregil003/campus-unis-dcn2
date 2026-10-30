@@ -3,11 +3,16 @@
 ## R-01 · Contradicción de direccionamiento WiFi (crítica)
 
 El texto del proyecto dice: *"Sede Norte opera subredes internas en el bloque 10.10.0.0/8"*.
-El diagrama de referencia pone el WiFi en `192.168.1.0/24` … `192.168.5.0/24`, que queda **fuera** de ese bloque.
+El diagrama de referencia pone el WiFi en `192.168.1.0/24` … `192.168.5.0/24`, fuera de ese bloque.
 
-- **Riesgo:** un evaluador puede objetar el direccionamiento por no cumplir la regla escrita.
-- **Propuesta:** WiFi en `10.10.11.0/24` … `10.10.15.0/24` (cumple la regla y no choca con las /30 ni con `10.10.0.0/24`).
-- **Acción:** confirmar con el catedrático y anotar la decisión en `06-DECISIONES.md` (D-01).
+- **Decisión (30/10/2026, D-01):** se respeta el **diagrama** — WiFi en `192.168.1-5.0/24` (Norte) y
+  `192.168.11-14.0/24` (Sur). Es el documento que el catedrático tendrá en la mano y contra el que se
+  compara la tabla de IPs en la nota de documentación. El bloque `/8` se cumple en todo lo que enruta el
+  campus (anillo, LAN del servidor, contenedores y loopbacks).
+- **Riesgo residual:** si el DHCP del laboratorio (`e1` del router del ISP) reparte `192.168.1-14`, las WiFi
+  chocarían con esa red. **Confirmar en clase**; si choca, plan B = volver a `10.10.11-15.0/24` y regenerar
+  los hAP (2 min).
+- **Acción:** preguntar al Ing. Morales por el direccionamiento del laboratorio antes del ensayo.
 
 ## R-02 · Colisión de la red del servidor
 

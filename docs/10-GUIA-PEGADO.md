@@ -226,7 +226,7 @@ terminado. Todo lo que sigue (contenedor, servidor, extras) ya no puede romper O
 [ ] GW-B  /routing ospf neighbor print   -> 3 Full
 [ ] los 9 hAP                            -> 2 Full cada uno  (total 12 adyacencias)
 [ ] cualquier hAP /ip firewall nat print -> VACÍO (Regla 8)
-[ ] cliente Norte: ipconfig              -> 10.10.1x.x, gw .1, dns 10.10.255.1
+[ ] cliente Norte: ipconfig              -> 192.168.N.x, gw 192.168.N.1, dns 10.10.255.1
 [ ] cliente Norte: ping 10.10.0.100      -> responde
 [ ] cliente Sur:   ping 10.10.0.100      -> responde (cruza el inter-sede)
 [ ] navegar http://10.10.0.100           -> 200 OK
@@ -264,3 +264,36 @@ paquete WiFi 6), no contra memoria.
 3. Que el `hAP ax lite` acepte `2ghz-ax` (su radio es 802.11ax, debería; si no, `2ghz-n`).
 4. `SXT Lite5`: confirmar que la versión de RouterOS que trae soporta `station-bridge`
    (sí en v6 y v7; es lo que exige el diseño L2 transparente).
+
+---
+
+## Migración de los hAP ya configurados (cambio D-01, 30/10/2026)
+
+Los equipos que ya tienen pegado el bloque 3/5 con las IPs viejas (`10.10.11-15` / `10.20.11-14`) **no
+necesitan reset**: se borran las cuatro cosas de la red WiFi vieja y se vuelve a pegar el bloque 3/5 nuevo.
+
+Comandos (uno por uno, en cada hAP afectado):
+
+```
+/ip dhcp-server remove [find name=dhcp-wifi]
+/ip pool remove [find name=pool-wifi]
+/ip address remove [find interface=br-wifi]
+```
+
+Verificar que las tres tablas quedaron limpias antes de re-pegar:
+
+```
+/ip address print where interface=br-wifi
+/ip pool print
+/ip dhcp-server print
+```
+
+Después se pega el **BLOQUE 3/5 nuevo** del `.rsc` regenerado (`configs/rsc/hAP-NX.rsc`). El bloque 4
+(OSPF) no se repite: sigue apuntando a `br-wifi` por nombre, y el bridge no se toca.
+
+**Resultado esperado:**
+
+- `/ip address print` → `192.168.N.1/24` en `br-wifi` (Norte `N` = 1-5, Sur `N` = 11-14).
+- Un cliente que se conecta al SSID recibe `192.168.N.x`, gateway `192.168.N.1` y DNS el loopback del GW
+  (`10.10.255.1` o `10.20.255.1`).
+- `/routing ospf neighbor print` → sigue con los mismos 2 vecinos en `Full` (el WiFi es `passive`).

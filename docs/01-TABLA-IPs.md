@@ -1,8 +1,10 @@
 # Tabla de direccionamiento y costos OSPF
 
-Estado: **propuesta del equipo, pendiente de confirmar D-01 (WiFi) con el catedrático.**
+Estado: **vigente desde el 30/10/2026 — D-01 revisada: el WiFi sigue el diagrama v3 (`192.168.x`).**
 Bloques obligatorios del enunciado respetados: Norte en `10.10.0.0/8`, Sur en `10.20.0.0/8`,
 inter-sede `10.99.0.0/30`, WANs `100.64.1.0/30` y `100.64.2.0/30`.
+Las `/24` de WiFi son la única excepción declarada: se copian del **diagrama de referencia v3**
+(`192.168.1-5.0/24` y `192.168.11-14.0/24`), por decisión D-01 del 30/10/2026.
 
 ---
 
@@ -39,11 +41,11 @@ inter-sede `10.99.0.0/30`, WANs `100.64.1.0/30` y `100.64.2.0/30`.
 
 | Nodo | ether1 (anillo) | ether2 (anillo) | WiFi | Loopback / router-id |
 |---|---|---|---|---|
-| hAP-1A | `10.10.1.2/30` | `10.10.2.1/30` | `10.10.11.1/24` | `10.10.255.11/32` |
-| hAP-2A | `10.10.2.2/30` | `10.10.3.1/30` | `10.10.12.1/24` | `10.10.255.12/32` |
-| hAP-3A | `10.10.3.2/30` | `10.10.4.1/30` | `10.10.13.1/24` | `10.10.255.13/32` |
-| hAP-4A | `10.10.4.2/30` | `10.10.5.1/30` | `10.10.14.1/24` | `10.10.255.14/32` |
-| hAP-5A | `10.10.5.2/30` | `10.10.6.1/30` | `10.10.15.1/24` | `10.10.255.15/32` |
+| hAP-1A | `10.10.1.2/30` | `10.10.2.1/30` | `192.168.1.1/24` | `10.10.255.11/32` |
+| hAP-2A | `10.10.2.2/30` | `10.10.3.1/30` | `192.168.2.1/24` | `10.10.255.12/32` |
+| hAP-3A | `10.10.3.2/30` | `10.10.4.1/30` | `192.168.3.1/24` | `10.10.255.13/32` |
+| hAP-4A | `10.10.4.2/30` | `10.10.5.1/30` | `192.168.4.1/24` | `10.10.255.14/32` |
+| hAP-5A | `10.10.5.2/30` | `10.10.6.1/30` | `192.168.5.1/24` | `10.10.255.15/32` |
 
 `ether3` del **hAP-1A** = `10.10.0.1/24`, dedicado a la Raspberry Pi. Sin bridge: es un puerto enrutado.
 
@@ -52,7 +54,7 @@ inter-sede `10.99.0.0/30`, WANs `100.64.1.0/30` y `100.64.2.0/30`.
 | Elemento | Dirección | Notas |
 |---|---|---|
 | Raspberry Pi A (nginx) | `10.10.0.100/24`, gw `10.10.0.1` | IP fija exigida por el enunciado |
-| Pool DHCP WiFi | `10.10.1X.10 – 10.10.1X.250` | por nodo (X = número de hAP) |
+| Pool DHCP WiFi | `192.168.N.10 – 192.168.N.250` | por nodo (N = número del hAP: Norte 1-5, Sur 11-14) |
 
 ---
 
@@ -64,7 +66,7 @@ inter-sede `10.99.0.0/30`, WANs `100.64.1.0/30` y `100.64.2.0/30`.
 | GW-B ↔ SXT-B | `10.99.0.2/30` |
 | GW-B loopback | `10.20.255.1/32` |
 | Anillo Sur (5 enlaces) | `10.20.1.0/30` … `10.20.5.0/30` |
-| WiFi hAP-1B…4B | `10.20.11.1` … `10.20.14.1` (`.0/24` cada uno) |
+| WiFi hAP-1B…4B | `192.168.11.1` … `192.168.14.1` (`.0/24` cada uno) |
 | Raspberry Pi B (nginx) | `10.20.0.100/24` |
 | AdGuard Home (container) | `10.20.254.53` |
 
@@ -102,4 +104,4 @@ camino intra-anillo (4 saltos con un enlace caído) es 40.
 
 - Formato de etiqueta: `ORIGEN / PUERTO → DESTINO / PUERTO` (ej. `GW-A / ether2 → hAP-1A / ether1`).
 - Identidad del equipo = nombre del diagrama = etiqueta del rack.
-- SSID: `UNIS-N1` … `UNIS-N5` (Norte), `UNIS-S1` … `UNIS-S4` (Sur).
+- SSID: `UNIS-A1` … `UNIS-A5` (Norte), `UNIS-B1` … `UNIS-B4` (Sur) — coincide con los `.rsc`.

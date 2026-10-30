@@ -55,11 +55,11 @@ add address=10.10.0.1/24 interface=ether3 comment="segmento del servidor"
 /interface bridge port add bridge=br-wifi interface=ether4 comment="puerto de pruebas"
 
 /ip address
-add address=10.10.11.1/24 interface=br-wifi comment="red de usuarios hAP-1A"
+add address=192.168.1.1/24 interface=br-wifi comment="red de usuarios hAP-1A"
 
-/ip pool add name=pool-wifi ranges=10.10.11.10-10.10.11.250
+/ip pool add name=pool-wifi ranges=192.168.1.10-192.168.1.250
 /ip dhcp-server add name=dhcp-wifi interface=br-wifi address-pool=pool-wifi lease-time=1h disabled=no
-/ip dhcp-server network add address=10.10.11.0/24 gateway=10.10.11.1 dns-server=10.10.255.1
+/ip dhcp-server network add address=192.168.1.0/24 gateway=192.168.1.1 dns-server=10.10.255.1
 
 # ==================================================================
 # BLOQUE 4/5 · OSPF  --  instancia, area 0 y plantillas de interfaz

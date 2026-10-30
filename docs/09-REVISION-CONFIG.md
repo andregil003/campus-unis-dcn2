@@ -80,7 +80,8 @@ Lo más grave no es un error de sintaxis: es que **el WiFi no existe** en ningun
 
 ## 5. Pendiente de confirmar con el catedrático
 
-1. **D-01** — WiFi en `10.10.11-15.0/24` (regla escrita) vs `192.168.1-5.0/24` (diagrama).
-   Se implementó la primera; el cambio a la segunda es regenerar los hAP (2 min).
+1. **D-01 — RESUELTA el 30/10/2026:** el WiFi quedó en `192.168.1-5.0/24` (Norte) y
+   `192.168.11-14.0/24` (Sur), igual que el diagrama v3. Pendiente de confirmar con el Ing. Morales
+   que el DHCP del laboratorio no use `192.168.1-14` (si choca, plan B en R-01).
 2. Gateway y bloque WAN reales (`100.64.1.1` / `100.64.2.1`).
 3. Si exige Raspberry Pi **física** en Norte (R-13 → opción B2/B4).
