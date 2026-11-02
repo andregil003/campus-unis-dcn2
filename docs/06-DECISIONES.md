@@ -182,3 +182,22 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
   trampas de Windows en `08-SERVIDOR.md` (§2.3: firewall, suspensión, doble NIC, arranque como servicio).
 - **Riesgo residual:** si el catedrático exige Raspberry Pi física, se activa R-13 opción B2 (Pi prestada) o B4.
 - **Decisor:** André (y confirmación del catedrático).
+
+---
+
+## D-13 · Máquina concreta del servidor de Sede Norte (titular)
+
+- **Estado:** CERRADA — 02/11/2026
+- **Contexto:** D-08 aprobó "una laptop con Windows" pero sin identificar cuál. El enunciado (§4.4) pide una
+  Raspberry Pi por sede; el grupo no tiene ningún SBC, así que la laptop ocupa su lugar en el diagrama, sin
+  cambiar IP ni subred.
+- **Decisión:** el servidor **titular** de Sede Norte es la laptop `DESKTOP-LKL1R8L`
+  (Intel i5-5200U, 8 GB RAM, Windows 11 Enterprise 22621, NIC Ethernet Realtek PCIe GBE 1 Gbps).
+  Despliegue nginx/Windows 1.30.6 en `C:\nginx`, IP `10.10.0.100/24` sobre la NIC Ethernet.
+- **Consecuencia:** el puerto RJ45 es nativo (no hace falta adaptador USB-Ethernet ⇒ **W-8 descartado**).
+  La máquina cumple S-01…S-06 por comportamiento; queda como *cold spare* descartada por ahora, porque
+  esta misma laptop es el titular.
+- **Verificación:** `servidor/windows/verificar.ps1`. Los ítems que dependen del cableado (S-01, S-02b, S-04,
+  S-05) solo pueden pasar con el enlace `Ethernet → hAP-1A ether3` armado.
+- **Decisor:** André.
+

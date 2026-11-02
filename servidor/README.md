@@ -7,6 +7,7 @@ Este directorio es **portable**: copiarlo a cualquier PC con Windows o Linux y e
 servidor/
 ├─ html/index.html            página de la sede (compartida por ambas plataformas)
 ├─ windows/nginx.conf         config lista para nginx/Windows
+├─ windows/preparar-red.ps1   un solo comando: red privada + IP + firewall + nginx + verificación
 ├─ windows/verificar.ps1      verificación S-01…S-06 desde Windows
 └─ linux/campus-unis.conf     config para nginx de Linux / Raspberry Pi
     linux/verificar.sh        verificación S-01…S-06 desde Linux
@@ -41,6 +42,18 @@ Start-Process .\nginx.exe
 # 6. verificar
 powershell -ExecutionPolicy Bypass -File servidor\windows\verificar.ps1
 ```
+
+**Atajo (recomendado el día del ensayo):** una vez que el cable está en `hAP-1A ether3` y nginx corriendo,
+un solo comando deja la máquina lista y verifica:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File servidor\windows\preparar-red.ps1
+```
+
+Hace, en orden: comprueba el cable → marca la red como **Privada** (Windows la pone en Pública y bloquea el
+puerto 80) → asegura la regla de firewall → asegura IP `10.10.0.100/24`, gateway `10.10.0.1` y DNS
+`10.10.255.1` → asegura la tarea de arranque de nginx → corre `verificar.ps1`. Es idempotente y termina con
+código 2 y la lista de bloqueos si aún falta algo físico.
 
 **Arranque automático (S-06):** registrar nginx como servicio con NSSM o WinSW, o crear una tarea programada
 "Al iniciar el sistema" que ejecute `C:\nginx\nginx.exe`. Sin esto, un corte de energía deja el servidor apagado.
