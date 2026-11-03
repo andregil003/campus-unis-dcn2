@@ -53,7 +53,10 @@ La laptop ocupa el lugar de la Raspberry Pi en el diagrama. **No cambia ninguna 
 | W-5 | nginx no arranca al reiniciar (nadie inicia sesión) | Servicio con NSSM/WinSW, no acceso manual |
 | W-6 | `nginx/Windows` no es el build Linux: usa `select()` y es menos eficiente | Irrelevante para una demo: pocas conexiones. No usar para benchmarks |
 | W-7 | Reloj desfasado ⇒ logs sin valor probatorio | Sincronización NTP de Windows activa y zona horaria correcta |
-| W-8 | La laptop no tiene puerto RJ45 | Adaptador USB-Ethernet documentado en el inventario antes de armar el rack |
+| W-8 | La laptop no tiene puerto RJ45 | Adaptador USB-Ethernet documentado en el inventario antes de armar el rack (**descartado**, D-13: la Realtek PCIe GBE es nativa) |
+| W-9 | **Con WiFi + Ethernet conectados Windows manda el tráfico `10.x` por el WiFi** aunque el cable tenga mejor métrica (verificado el 02/11/2026: Ethernet total 11 vs WiFi 55, y aun así eligió WiFi) | Ruta explícita persistente `10.0.0.0/8 → 10.10.0.1` por la interfaz Ethernet (`preparar-red.ps1`, paso 4). No basta con `InterfaceMetric` |
+| W-10 | **Windows bloquea el ICMP entrante por defecto** ⇒ los routers y la otra sede no pueden hacer `ping` al servidor, y el ping es criterio de evaluación | Regla de entrada `ICMPv4 echo` (tipo 8) para los perfiles Privado y Dominio (`preparar-red.ps1`, paso 3b) |
+| W-11 | **VPN de terceros** (Cloudflare WARP, Tailscale) activa durante el ensayo: intercepta TCP y devuelve "puertos abiertos" que no existen, además de romper el ruteo `10.x` | Desconectar WARP/Tailscale antes de cualquier prueba de red (`warp-cli disconnect`, salir de Tailscale) |
 
 ### 2.4 Aprobación del catedrático — REGISTRADA
 

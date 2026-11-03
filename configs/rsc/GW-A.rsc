@@ -87,6 +87,11 @@ add address=10.99.0.1/30 interface=ether7 comment=inter-sede
 
 /ip dns set allow-remote-requests=yes servers=1.1.1.1,8.8.8.8
 
+# Nombre local de prueba (D-14): resuelve SIN internet y SIN el Pi-hole.
+# Es lo que valida verificar.ps1 en la prueba "DNS" contra 10.10.255.1.
+# Cuando el Pi-hole este arriba, sobrevive igual porque vive en GW-A.
+/ip dns static add name=prueba-dns.campus address=10.10.255.1 comment="prueba local de DNS"
+
 # ==================================================================
 # BLOQUE 4/7 · NAT, ruta por defecto y firewall
 # ==================================================================

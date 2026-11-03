@@ -11,7 +11,7 @@ del fabricante, no contra suposiciones.
 | MikroTik hAP ax lite | **9** | `L41G-2axD` | 5 → anillo Norte · 4 → anillo Sur |
 | Raspberry Pi **Pico** | 1 | RP2040, 264 KB RAM, Cortex-M0+ | **no sirve como servidor nginx** (ver R-13) |
 | Antena SXT Lite5 | 2 | provistas por el catedrático | enlace inter-sede |
-| Raspberry Pi (SBC) | **0** | — | **faltante crítico** (servidor de sede) |
+| Raspberry Pi (SBC) | **0** | — | **sustituida por laptop** (D-08 + D-13): Norte usa `DESKTOP-LKL1R8L` con nginx/Windows |
 
 ### 1.1 Las dos unidades físicas (verificado con `export`, 28/10/2026)
 
@@ -72,4 +72,5 @@ Con los dos en 7.24.2 se necesita **un solo** `container-7.24.2-arm64.npk` (R-17
 2. **Repuestos:** 9 hAP = exactamente 5 + 4, **sin margen**. Si uno falla el día de la defensa, no hay
    sustituto (R-14).
 3. **WiFi 2.4 GHz:** definir canales (1, 6, 11) entre los 5 nodos para no autointerferirse (R-15).
-4. **Servidor:** el Pico no es un SBC. Falta una Raspberry Pi real o sustituto (R-13 / D-08).
+4. **Servidor:** el Pico no es un SBC. Norte resuelve con laptop + nginx/Windows (D-08, D-13); Sur con su
+   Raspberry Pi 4 de 2 GB. El sustituto está desplegado y verificado con `servidor/windows/verificar.ps1`.

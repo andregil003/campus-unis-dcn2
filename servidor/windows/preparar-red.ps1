@@ -5,7 +5,8 @@
     1. revisa que el cable este puesto
     2. marca la red como Privada (Windows la pone en Publica y bloquea el puerto 80)
     3. asegura la regla de firewall TCP 80
-    4. asegura IP estatica, gateway y DNS del estandar S-01
+    3b. asegura la regla ICMPv4 echo (el ping al servidor debe responder, W-10)
+    4. asegura IP estatica, gateway, DNS y la ruta 10.0.0.0/8 por el cable (W-9)
     5. asegura que nginx este escuchando (tarea "Campus UNIS nginx")
     6. corre la verificacion S-01..S-06
 
@@ -119,6 +120,25 @@ if ($regla) {
   }
 }
 
+# --------------------- 3b. ICMP de entrada (W-10: sin esto el ping al servidor falla)
+Paso "3b" "Regla de firewall ICMPv4 echo (ping al servidor desde los routers)"
+$nombreIcmp = "Campus UNIS ICMPv4 echo"
+$reglaIcmp  = Get-NetFirewallRule -DisplayName $nombreIcmp -ErrorAction SilentlyContinue
+if ($reglaIcmp) {
+  OK "ya existe (habilitada: $($reglaIcmp.Enabled))"
+} else {
+  New-NetFirewallRule -DisplayName $nombreIcmp `
+    -Description "Permite ping al servidor Sede Norte (proyecto DCN2)" `
+    -Direction Inbound -Protocol ICMPv4 -IcmpType 8 -Action Allow `
+    -Profile Private, Domain -ErrorAction SilentlyContinue | Out-Null
+  if (Get-NetFirewallRule -DisplayName $nombreIcmp -ErrorAction SilentlyContinue) {
+    OK "creada"
+  } else {
+    FALLO "no se pudo crear la regla ICMP"
+    $bloqueos += "regla de firewall ICMP (ping al servidor)"
+  }
+}
+
 # ------------------------------------------------- 4. IP estatica, gw y DNS (S-01)
 Paso 4 "IP estatica $IP/$Prefix  gw $Gateway  dns $DNS"
 $mascara = Get-Mascara $Prefix
@@ -142,6 +162,28 @@ OK "DHCP deshabilitado en la interfaz (no puede pisar la IP estatica)"
 
 Set-NetIPInterface -InterfaceAlias $Interface -AddressFamily IPv4 -InterfaceMetric $Metric -ErrorAction SilentlyContinue
 OK "metrica de interfaz = $Metric (gana sobre el WiFi cuando hay cable)"
+
+# W-9: con doble NIC Windows manda el 10.x por el WiFi aunque el cable tenga mejor
+# metrica (verificado el 02/11/2026). La ruta explicita lo deja deterministico:
+# Norte (10.10/16), inter-sede (10.99/30) y Sur (10.20/8) cuelgan de 10.0.0.0/8.
+$ruta = Get-NetRoute -DestinationPrefix "10.0.0.0/8" -ErrorAction SilentlyContinue |
+        Where-Object { $_.InterfaceAlias -eq $Interface -and $_.NextHop -eq $Gateway }
+if ($ruta) {
+  OK "ruta 10.0.0.0/8 -> $Gateway por $Interface ya existe"
+} else {
+  Remove-NetRoute -DestinationPrefix "10.0.0.0/8" -Confirm:$false -ErrorAction SilentlyContinue
+  New-NetRoute -DestinationPrefix "10.0.0.0/8" -InterfaceAlias $Interface -NextHop $Gateway `
+    -RouteMetric 1 -PolicyStore PersistentStore -ErrorAction SilentlyContinue | Out-Null
+  New-NetRoute -DestinationPrefix "10.0.0.0/8" -InterfaceAlias $Interface -NextHop $Gateway `
+    -RouteMetric 1 -ErrorAction SilentlyContinue | Out-Null
+  if (Get-NetRoute -DestinationPrefix "10.0.0.0/8" -ErrorAction SilentlyContinue |
+      Where-Object { $_.InterfaceAlias -eq $Interface }) {
+    OK "ruta 10.0.0.0/8 creada (persistente): Norte y Sur salen por el cable"
+  } else {
+    AVISO "sin enlace Windows no deja crear la ruta; se re-crea al reconectar el cable"
+    $bloqueos += "ruta 10.0.0.0/8 por $Interface"
+  }
+}
 
 $dnsActual = (Get-DnsClientServerAddress -InterfaceAlias $Interface -AddressFamily IPv4 -ErrorAction SilentlyContinue).ServerAddresses
 if ($dnsActual -contains $DNS) {

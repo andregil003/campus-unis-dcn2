@@ -201,3 +201,31 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
   S-05) solo pueden pasar con el enlace `Ethernet → hAP-1A ether3` armado.
 - **Decisor:** André.
 
+---
+
+## D-14 · Ruteo y ICMP del servidor Windows + DNS local sin WAN
+
+- **Estado:** CERRADA — 02/11/2026 (verificado en el laboratorio con el anillo Norte convergido)
+- **Contexto:** el anillo Norte quedó `Full` en los 6 saltos (GW-A ↔ hAP-1A ↔ hAP-2A ↔ hAP-3A ↔ hAP-4A ↔
+  hAP-5A ↔ GW-A), las 6 direcciones del anillo respondían desde los routers, y sin embargo la laptop solo
+  alcanzaba `10.10.0.1`. Dos causas independientes, ambas del lado Windows:
+  1. Con WiFi y Ethernet conectados a la vez, Windows elegía la **ruta por defecto del WiFi** para todo
+     destino `10.x` aunque la Ethernet tuviera mejor métrica (total 11 vs 55). La métrica de interfaz
+     **no** fue suficiente.
+  2. La **regla ICMP de entrada estaba deshabilitada**: el hAP-1A no podía hacer `ping` a `10.10.0.100`
+     ni el GW-A podía responder (sin ruta de retorno percibida).
+- **Decisión:**
+  - `preparar-red.ps1` crea una ruta **persistente** `10.0.0.0/8 → 10.10.0.1` por la interfaz Ethernet.
+    Cubre Norte (`10.10/16`), inter-sede (`10.99/30`) y Sur (`10.20/8`) con una sola entrada.
+  - `preparar-red.ps1` crea la regla `Campus UNIS ICMPv4 echo` (tipo 8, perfiles Privado y Dominio).
+  - `GW-A.rsc` agrega el registro DNS estático `prueba-dns.campus → 10.10.255.1` para que la prueba DNS
+    de `verificar.ps1` pase **sin Internet y sin el Pi-hole**, ya que la WAN (`ether1`) todavía no tiene
+    enlace y el paquete `container` no está instalado en GW-A.
+- **Consecuencia:** la ruta `10.0.0.0/8` es una decisión de laboratorio: si la laptop se conecta a otra
+  red que use `10.0.0.0/8`, hay que quitarla (`Remove-NetRoute -DestinationPrefix 10.0.0.0/8`). Queda
+  documentada como W-9 en `08-SERVIDOR.md`.
+- **Riesgo residual:** ninguna de las dos correcciones sustituye el cableado. S-05a/S-05b siguen
+  requiriendo el enlace `GW-A ether7 ↔ SXT-A` (hoy **sin link**, `10.99.0.0/30` inactiva).
+- **Decisor:** André.
+
+
