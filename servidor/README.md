@@ -5,12 +5,13 @@ Este directorio es **portable**: copiarlo a cualquier PC con Windows o Linux y e
 
 ```
 servidor/
-├─ html/index.html            página de la sede (compartida por ambas plataformas)
+├─ html/index.html            página de Sede Norte (laptop Windows)
+├─ html/sur/index.html        página de Sede Sur (Raspberry Pi 4)
 ├─ windows/nginx.conf         config lista para nginx/Windows
 ├─ windows/preparar-red.ps1   un solo comando: red privada + IP + firewall + nginx + verificación
 ├─ windows/verificar.ps1      verificación S-01…S-06 desde Windows
-└─ linux/campus-unis.conf     config para nginx de Linux / Raspberry Pi
-    linux/verificar.sh        verificación S-01…S-06 desde Linux
+├─ linux/campus-unis.conf     sitio nginx para Linux / Raspberry Pi (bloque server)
+└─ linux/verificar.sh         verificación S-01…S-06 desde Linux
 ```
 
 > **Norte** usa Windows (laptop). **Sur** usa Raspberry Pi 4. El procedimiento de respaldo (§4) sirve para
@@ -64,16 +65,25 @@ código 2 y la lista de bloqueos si aún falta algo físico.
 
 ## 2. Despliegue en Linux / Raspberry Pi
 
+> **Sede Sur:** la guía paso a paso (microSD, SSH, IP fija con `nmcli`, firewall, arranque
+> automático, prueba de corte de energía y evidencia) está en
+> [`docs/12-SERVIDOR-SUR.md`](../docs/12-SERVIDOR-SUR.md). Lo de abajo es el resumen técnico.
+
 ```bash
 sudo apt update && sudo apt install -y nginx
 sudo mkdir -p /var/www/campus
-sudo cp servidor/html/index.html /var/www/campus/
+sudo cp servidor/html/sur/index.html /var/www/campus/index.html   # Sur
+# sudo cp servidor/html/index.html /var/www/campus/index.html      # Norte
 sudo cp servidor/linux/campus-unis.conf /etc/nginx/sites-available/campus
 sudo ln -sf /etc/nginx/sites-available/campus /etc/nginx/sites-enabled/campus
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl enable --now nginx
 chmod +x servidor/linux/verificar.sh && ./servidor/linux/verificar.sh 10.20.0.100 10.10.0.100
 ```
+
+`campus-unis.conf` es un **archivo de sitio** (bloque `server`), no un `nginx.conf` completo:
+va en `sites-available/`. Si lo pegas sobre `/etc/nginx/nginx.conf`, nginx arranca sin el resto
+de la configuración de Debian.
 
 IP fija en Raspberry Pi OS (Bookworm, NetworkManager):
 

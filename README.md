@@ -26,6 +26,8 @@ Valor: **40 puntos** + hasta **5 puntos** de instalación física · Defensa ora
 | [docs/08-SERVIDOR.md](docs/08-SERVIDOR.md) | Servidor de sede: estándar neutral S-01…S-06, montaje Windows y Pi 4, pruebas cruzadas |
 | [`docs/09-REVISION-CONFIG.md`](docs/09-REVISION-CONFIG.md) | Revisión de las configs del compañero: 4 bloqueantes, 9 importantes y cómo quedaron |
 | [`docs/10-GUIA-PEGADO.md`](docs/10-GUIA-PEGADO.md) | **Guía de pegado**: qué bloque pegar en cada router, qué hace y cómo se verifica |
+| [`docs/11-EVIDENCIA-OSPF.md`](docs/11-EVIDENCIA-OSPF.md) | Evidencia de validación OSPF: adyacencia, LSDB, rutas y convergencia |
+| [`docs/12-SERVIDOR-SUR.md`](docs/12-SERVIDOR-SUR.md) | **Guía paso a paso de la Raspberry Pi 4 de Sur**: microSD, SSH, IP fija, nginx, firewall, arranque automático y evidencia |
 | [servidor/](servidor/) | Despliegue portable del servidor: nginx Windows/Linux, página, verificación y procedimiento de respaldo |
 | [`fuentes/`](fuentes/) | Enunciado y diagrama de referencia originales (PDF) |
 

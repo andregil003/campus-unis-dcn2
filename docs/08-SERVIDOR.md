@@ -71,6 +71,10 @@ titular no arranca, se levanta otra máquina con el mismo estándar y la misma I
 
 ## 3. Sede Sur — Raspberry Pi 4 (2 GB)
 
+**Procedimiento paso a paso (para Dharly / Grupo B): [`docs/12-SERVIDOR-SUR.md`](12-SERVIDOR-SUR.md)** —
+microSD, SSH headless, IP fija con `nmcli`, firewall, arranque automático, prueba de corte de
+energía, trampas de la Pi y checklist de evidencia.
+
 No es nuestra configuración, pero se coordina porque la nota es compartida.
 
 | Aspecto | Recomendación (para acordar con Grupo B) |
