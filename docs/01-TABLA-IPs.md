@@ -8,6 +8,23 @@ Las `/24` de WiFi son la única excepción declarada: se copian del **diagrama d
 
 ---
 
+## 0. Router ISP — laboratorio (`ROUTER-ISP`, RB3011UiAS)
+
+Hace el papel del "Router ISP" del diagrama v3. No pertenece a ninguna sede y **no participa en OSPF**.
+
+| Interfaz | Dirección | Rol |
+|---|---|---|
+| `sfp1` (e1) | `172.18.4.18/24` (DHCP, gateway `172.18.4.1`) | uplink al laboratorio |
+| `ether2` (e2) | `100.64.1.1/30` | WAN de Sede Norte → `GW-A ether1` (`100.64.1.2/30`) |
+| `ether3` (e3) | `100.64.2.1/30` | WAN de Sede Sur → `GW-B ether1` (`100.64.2.2/30`) |
+| `ether7` | `10.0.1.1/25` | otro grupo ("Puerto 7 - Rodrigo Quiroa") — **no se toca** |
+
+Una sola regla NAT (`masquerade out-interface=sfp1`). Sin DHCP, DNS, OSPF, firewall ni bridge.
+La IP del uplink es dinámica: puede cambiar sin romper nada porque el NAT es por interfaz.
+Config: `configs/rsc/ROUTER-ISP.rsc` · backups: `configs/backups/` · decisión: **D-15**.
+
+---
+
 ## 1. Sede Norte — Grupo A (nuestra responsabilidad)
 
 ### 1.1 GW-A · RB5009UG+S+IN

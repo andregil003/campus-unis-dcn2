@@ -228,4 +228,33 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
   requiriendo el enlace `GW-A ether7 ↔ SXT-A` (hoy **sin link**, `10.99.0.0/30` inactiva).
 - **Decisor:** André.
 
+---
+
+## D-15 · El "Router ISP" del diagrama es un RB3011 propio
+
+- **Estado:** CERRADA — 03/11/2026 (configurado y con Internet verificado en el laboratorio)
+- **Contexto:** el diagrama v3 pone arriba del campus un "Router ISP (Catedrático)" con `e1: lab DHCP`,
+  `e2: 100.64.1.1/30` y `e3: 100.64.2.1/30`. En el laboratorio ese papel lo cumple un **RB3011UiAS** del
+  grupo, y su config de fábrica no tenía ninguna de las dos `/30`: solo una LAN `192.168.26.0/24` en
+  `ether10` y un puerto asignado a otro grupo (`ether7`, `10.0.1.1/25`).
+- **Decisión:**
+  - `sfp1` (e1) = cliente DHCP hacia el laboratorio (`172.18.4.18/24`, gateway `172.18.4.1`).
+  - `ether2` (e2) = `100.64.1.1/30` → `GW-A ether1` (`100.64.1.2/30`).
+  - `ether3` (e3) = `100.64.2.1/30` → `GW-B ether1` (`100.64.2.2/30`).
+  - Una sola regla NAT (`masquerade out-interface=sfp1`). **Sin** DHCP, DNS (`allow-remote-requests=no`),
+    OSPF, firewall ni bridge: el equipo solo enruta y traduce.
+  - Se elimina la LAN de fábrica (`192.168.26.1/24`, `dhcp_pool0`, `dhcp1` y su network).
+  - `ether7` (`10.0.1.1/25`, "Puerto 7 - Rodrigo Quiroa") es de otro grupo y **no se toca**.
+- **Consecuencia:** las configs de los GW **no cambian**: ya esperaban `100.64.1.1` / `100.64.2.1` como
+  gateway. Hay doble NAT (cliente → GW → ISP → lab) y es intencional: el traceroute del failover mostrará
+  dos saltos privados antes de salir al laboratorio.
+- **Riesgo residual:** el uplink del laboratorio es único; si `sfp1` cae, el campus completo pierde
+  Internet aunque las dos sedes estén sanas. El lease DHCP del lab (~20 min) puede cambiar de IP sin
+  romper nada, porque el NAT es por interfaz y no por dirección.
+- **Verificación realizada:** `ip address print` (172.18.4.18 + las dos `/30`), `ip route print`
+  (`DAd` por 172.18.4.1, distance 1), una sola regla en `ip firewall nat print`,
+  `tool ping 1.1.1.1` = 3/3 a ~2 ms.
+- **Evidencia:** `configs/rsc/ROUTER-ISP.rsc` + `configs/backups/ROUTER-ISP-2026-11-03.{backup,rsc}`.
+- **Decisor:** André.
+
 

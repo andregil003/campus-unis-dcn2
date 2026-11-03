@@ -11,7 +11,21 @@ del fabricante, no contra suposiciones.
 | MikroTik hAP ax lite | **9** | `L41G-2axD` | 5 → anillo Norte · 4 → anillo Sur |
 | Raspberry Pi **Pico** | 1 | RP2040, 264 KB RAM, Cortex-M0+ | **no sirve como servidor nginx** (ver R-13) |
 | Antena SXT Lite5 | 2 | provistas por el catedrático | enlace inter-sede |
+| MikroTik RB3011UiAS | 1 | `RB3011UiAS` (10× GbE + SFP) | **Router ISP** del laboratorio (D-15) — no viene del enunciado |
 | Raspberry Pi (SBC) | **0** | — | **sustituida por laptop** (D-08 + D-13): Norte usa `DESKTOP-LKL1R8L` con nginx/Windows |
+
+### 1.2 Router ISP del laboratorio (RB3011UiAS)
+
+| Dato | Valor |
+|---|---|
+| Serial | `783E064858A9` |
+| RouterOS | **7.24.5** |
+| Identidad | `ROUTER-ISP` |
+| Uplink | `sfp1` por DHCP (`172.18.4.18/24`, gateway `172.18.4.1`) |
+| WAN Norte | `ether2` `100.64.1.1/30` → `GW-A ether1` |
+| WAN Sur | `ether3` `100.64.2.1/30` → `GW-B ether1` |
+| Reservado | `ether7` `10.0.1.1/25` (otro grupo) · `ether5` consola |
+| Config | `configs/rsc/ROUTER-ISP.rsc` · backup en `configs/backups/` |
 
 ### 1.1 Las dos unidades físicas (verificado con `export`, 28/10/2026)
 
