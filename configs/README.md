@@ -5,7 +5,9 @@ Carpeta de **configuración como código**. Nada se escribe a mano dos veces.
 ```
 configs/
 ├── generar-haps.py     genera los 9 hAP desde una tabla (no editar los .rsc a mano)
+├── backups/            volcado real del ISP (03/11/2026): .backup + .rsc
 └── rsc/
+    ├── ROUTER-ISP.rsc  RB3011 "router ISP" del lab (e1 DHCP / e2-e3 100.64.x.1/30)
     ├── GW-A.rsc        RB5009 Sede Norte  (WAN, NAT, OSPF ASBR, Pi-hole)
     ├── GW-B.rsc        RB5009 Sede Sur    (coordinación para Grupo B / AdGuard)
     ├── hAP-1A.rsc … hAP-5A.rsc   anillo Norte + red de usuarios
@@ -14,7 +16,7 @@ configs/
     └── SXT-B.rsc       punta station-bridge del enlace inter-sede (sin IP)
 ```
 
-**13 equipos de red = 13 archivos.** Los 2 SXT no llevan IP a propósito: son el "cable inalámbrico" entre
+**14 equipos de red = 14 archivos** (13 del campus + el `ROUTER-ISP` del laboratorio). Los 2 SXT no llevan IP a propósito: son el "cable inalámbrico" entre
 sedes y se administran por MAC (WinBox → Neighbors). Los servidores no van aquí: están en `servidor/`.
 
 ## 1. Antes de empezar (una sola vez)
@@ -79,3 +81,23 @@ Los `.rsc` de los hAP se sobrescriben. Los GW (`GW-A.rsc`, `GW-B.rsc`) son manua
   8 puntos de OSPF aunque todo siga funcionando.
 - Los puertos `ether1`/`ether2` son **tránsito L3**: no van al bridge `br-wifi`.
 - El `SSID` no comparte bridge con la red de servidores (`10.10.0.0/24`), que cuelga de `hAP-1A ether3`.
+- En el `ROUTER-ISP`, `ether7` (`10.0.1.1/25`, "Puerto 7 - Rodrigo Quiroa") **no es nuestro**: no se toca.
+
+## 6. Backups del equipo físico
+
+`configs/backups/` guarda el volcado real de un equipo, con fecha en el nombre:
+
+| Archivo | Qué es | Restaurar con |
+|---|---|---|
+| `ROUTER-ISP-2026-11-03.backup` | binario completo (RouterOS **7.24.5**) | `/system backup load name=ROUTER-ISP-2026-11-03.backup` |
+| `ROUTER-ISP-2026-11-03.rsc` | texto, portable entre 7.x | `/import file-name=ROUTER-ISP-2026-11-03.rsc` |
+
+Generar uno nuevo (en el equipo):
+
+```
+/system backup save name=<equipo>-<fecha> dont-encrypt=yes
+/export file=<equipo>-<fecha>
+```
+
+`dont-encrypt=yes` es obligatorio: sin eso el restore pide una contraseña que nadie apuntó.
+El `.backup` solo restaura en **la misma versión** de RouterOS; el `.rsc` sirve en cualquier 7.x.
