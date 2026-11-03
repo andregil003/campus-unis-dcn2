@@ -137,3 +137,24 @@ pero introduce dos problemas concretos:
 
 - **Accion:** actualizar GW-A a 7.24.2 y verificar la version de los 9 hAP y de los 2 SXT antes de armar el
   rack. Registrar la version final de los 13 equipos en `07-HARDWARE.md`.
+
+---
+
+## R-18 - Sede Sur sin cablear: S-05a/S-05b no pueden pasar
+
+Estado verificado el **02/11/2026**: en el laboratorio solo esta armada la **Sede Norte**. Del lado Sur no
+hay nada conectado: `GW-B` (`10.99.0.2`) nunca respondio, la `10.99.0.0/30` de GW-A esta **INACTIVE**
+(`ether7` sin link) y no existe ruta hacia `10.20.0.0/8` en ningun router.
+
+Consecuencia directa: las dos comprobaciones de **conectividad inter-sede** del estandar
+(`S-05a` ping a `10.20.0.100` y `S-05b` HTTP `/health` a `10.20.0.100`) quedan en **PENDIENTE**, no en FAIL.
+`verificar.ps1 -SkipPeer` las marca como `PEND` y el resto del estandar se sigue evaluando normalmente.
+
+- **Lo que falta para cerrarlo (todo fisico + 6 configs ya escritas en `configs/rsc/`):**
+  1. `GW-B` (`GW-B.rsc`) sobre su RB5009, con `ether7 10.99.0.2/30`.
+  2. `SXT-A` (`SXT-A.rsc`) al `ether7` de GW-A y `SXT-B` (`SXT-B.rsc`) al `ether7` de GW-B — puente L2.
+  3. Anillo Sur: `hAP-1B` a `hAP-4B` (`hAP-1B.rsc` ... `hAP-4B.rsc`).
+  4. Servidor Sur (`10.20.0.100/24`): la Raspberry Pi 4 de 2 GB con `servidor/linux/verificar.sh`.
+- **Accion:** al terminar el armado, correr `verificar.ps1` **sin** `-SkipPeer` para que S-05a/S-05b pasen a
+  PASS/FAIL reales.
+- **Decisor:** Andre.

@@ -3,11 +3,13 @@
   Uso:
     powershell -ExecutionPolicy Bypass -File verificar.ps1
     powershell -ExecutionPolicy Bypass -File verificar.ps1 -IP 10.20.0.100 -Peer 10.10.0.100
+    powershell -ExecutionPolicy Bypass -File verificar.ps1 -SkipPeer   # Sede Sur aun sin cablear
 #>
 param(
   [string]$IP   = "10.10.0.100",
   [string]$Peer = "10.20.0.100",
-  [string]$DNS  = "10.10.255.1"
+  [string]$DNS  = "10.10.255.1",
+  [switch]$SkipPeer
 )
 
 $ErrorActionPreference = "Continue"
@@ -18,6 +20,15 @@ function Registrar($id, $prueba, $ok, $detalle) {
     Id      = $id
     Prueba  = $prueba
     Estado  = if ($ok) { "PASS" } else { "FAIL" }
+    Detalle = $detalle
+  }
+}
+
+function Pendiente($id, $prueba, $detalle) {
+  $script:resultados += [pscustomobject]@{
+    Id      = $id
+    Prueba  = $prueba
+    Estado  = "PEND"
     Detalle = $detalle
   }
 }
@@ -51,13 +62,18 @@ try {
 }
 
 # S-05 · alcanzabilidad del peer
-$ping = Test-Connection -ComputerName $Peer -Count 2 -Quiet -ErrorAction SilentlyContinue
-Registrar "S-05a" "ping a $Peer" $ping "ICMP"
-try {
-  $c = Invoke-WebRequest -Uri "http://$Peer/health" -UseBasicParsing -TimeoutSec 5
-  Registrar "S-05b" "HTTP /health a $Peer" ($c.StatusCode -eq 200) "'$($c.Content.Trim())'"
-} catch {
-  Registrar "S-05b" "HTTP /health a $Peer" $false $_.Exception.Message
+if ($SkipPeer) {
+  Pendiente "S-05a" "ping a $Peer" "Sede Sur sin cablear: pendiente de infraestructura"
+  Pendiente "S-05b" "HTTP /health a $Peer" "Sede Sur sin cablear: pendiente de infraestructura"
+} else {
+  $ping = Test-Connection -ComputerName $Peer -Count 2 -Quiet -ErrorAction SilentlyContinue
+  Registrar "S-05a" "ping a $Peer" $ping "ICMP"
+  try {
+    $c = Invoke-WebRequest -Uri "http://$Peer/health" -UseBasicParsing -TimeoutSec 5
+    Registrar "S-05b" "HTTP /health a $Peer" ($c.StatusCode -eq 200) "'$($c.Content.Trim())'"
+  } catch {
+    Registrar "S-05b" "HTTP /health a $Peer" $false $_.Exception.Message
+  }
 }
 
 # S-06 · nginx como servicio / tarea de arranque
@@ -87,12 +103,17 @@ $plan = powercfg /getactivescheme 2>$null
 Write-Host "Plan de energia activo: $plan" -ForegroundColor DarkGray
 
 $resultados | Format-Table -AutoSize
-$fallos = ($resultados | Where-Object { $_.Estado -eq "FAIL" }).Count
+$fallos    = @($resultados | Where-Object { $_.Estado -eq "FAIL" }).Count
+$pendiente = @($resultados | Where-Object { $_.Estado -eq "PEND" }).Count
+$ok        = @($resultados | Where-Object { $_.Estado -eq "PASS" }).Count
 Write-Host ""
+if ($pendiente -gt 0) {
+  Write-Host "$pendiente comprobacion(es) PENDIENTE(s): requieren Sede Sur cableada (S-05a/S-05b)" -ForegroundColor Yellow
+}
 if ($fallos -eq 0) {
-  Write-Host "TODO OK ($($resultados.Count) comprobaciones)" -ForegroundColor Green
+  Write-Host "SIN FALLOS: $ok PASS, $pendiente pendiente(s) de $($resultados.Count) comprobaciones" -ForegroundColor Green
   exit 0
 } else {
-  Write-Host "$fallos comprobacion(es) en FAIL" -ForegroundColor Red
+  Write-Host "$fallos comprobacion(es) en FAIL ($ok PASS, $pendiente pendiente)" -ForegroundColor Red
   exit 1
 }

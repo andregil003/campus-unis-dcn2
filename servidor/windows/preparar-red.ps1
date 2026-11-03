@@ -15,6 +15,7 @@
   Uso (PowerShell como Administrador):
     powershell -ExecutionPolicy Bypass -File preparar-red.ps1
     powershell -ExecutionPolicy Bypass -File preparar-red.ps1 -Interface "Ethernet" -IP 10.10.0.100
+    powershell -ExecutionPolicy Bypass -File preparar-red.ps1 -SkipPeer     # Sede Sur aun sin cablear
     powershell -ExecutionPolicy Bypass -File preparar-red.ps1 -SkipVerify
 
   Revertir:
@@ -29,6 +30,7 @@ param(
   [string]$DNS       = "10.10.255.1",
   [string]$Peer      = "10.20.0.100",
   [int]   $Metric    = 10,
+  [switch]$SkipPeer,
   [switch]$SkipVerify
 )
 
@@ -232,7 +234,9 @@ if ($SkipVerify) {
 } else {
   $verificador = Join-Path $PSScriptRoot "verificar.ps1"
   if (Test-Path $verificador) {
-    & powershell -ExecutionPolicy Bypass -File $verificador -IP $IP -Peer $Peer -DNS $DNS
+    $argsVerif = @{ IP = $IP; Peer = $Peer; DNS = $DNS }
+    if ($SkipPeer) { $argsVerif.SkipPeer = $true }
+    & powershell -ExecutionPolicy Bypass -File $verificador @argsVerif
   } else {
     AVISO "no se encontro verificar.ps1 junto a este script"
   }
