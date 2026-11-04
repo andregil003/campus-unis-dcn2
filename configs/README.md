@@ -30,6 +30,8 @@ sedes y se administran por MAC (WinBox → Neighbors). Los servidores no van aqu
    - `CambiarClavePihole2026` → clave del panel de Pi-hole.
 3. Confirmar la IP del ISP (`100.64.1.1` / `100.64.2.1`). Si el catedrático entrega otro gateway,
    se cambia en **una** línea de cada GW (ruta `default ISP`).
+4. **Mapa de puertos de los GW (D-16):** `ether1` = inter-sede a la antena (PoE-in alimenta el GW) y
+   `ether7` = WAN al `ROUTER-ISP`. No es el del diagrama v3, pero es el que permite el PoE-in.
 
 ## 2. Orden de aplicación
 

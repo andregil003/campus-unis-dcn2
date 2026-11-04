@@ -9,13 +9,18 @@
 #
 # COMO APLICAR: WinBox > New Terminal, un bloque por vez.
 #
-# MAPA DE PUERTOS
-#   ether1  -> ISP / router del catedratico        100.64.2.2/30
+# MAPA DE PUERTOS  (D-16: WAN e inter-sede intercambiados)
+#   ether1  -> SXT-B (inter-sede)                   10.99.0.2/30
+#              ether1 es el unico puerto con PoE-in 802.3af/at del RB5009:
+#              el inyector PoE de la antena alimenta el GW por este cable.
 #   ether2  -> hAP-1B ether1                        10.20.1.1/30
 #   ether3  -> hAP-4B ether2                        10.20.5.2/30
-#   ether7  -> GW-A ether7 (inter-sede)             10.99.0.2/30
+#   ether7  -> ROUTER-ISP ether3 (WAN)              100.64.2.2/30
 #   ether4/5/6/8 -> consola y libres (lista MGMT)
 #   lo      -> loopback                             10.20.255.1/32
+#
+# OJO: ether1 es 2.5G y ether7 es 1G. La WAN queda a 1 Gbps y el inter-sede
+# inalambrico no pasa de ~100 Mbps de todas formas.
 # =====================================================================
 
 
@@ -44,10 +49,10 @@
 # BLOQUE 2/7 · Puertos, listas y loopback
 # ==================================================================
 /interface ethernet
-set ether1 comment="GW-B/ether1 -> ISP (WAN) 100.64.2.2/30"
+set ether1 comment="GW-B/ether1 -> SXT-B 10.99.0.2/30 inter-sede (PoE-in: alimenta el GW)"
 set ether2 comment="GW-B/ether2 -> hAP-1B/ether1 10.20.1.1/30"
 set ether3 comment="GW-B/ether3 -> hAP-4B/ether2 10.20.5.2/30"
-set ether7 comment="GW-B/ether7 -> GW-A/ether7 10.99.0.2/30 inter-sede"
+set ether7 comment="GW-B/ether7 -> ROUTER-ISP/ether3 100.64.2.2/30 WAN"
 set ether4 comment="consola / libre"
 set ether5 comment="consola / libre"
 set ether6 comment="consola / libre"
@@ -57,10 +62,10 @@ set sfp-sfpplus1 comment="libre / reserva"
 /interface list add name=WAN
 /interface list add name=LAN
 /interface list add name=MGMT
-/interface list member add list=WAN interface=ether1
+/interface list member add list=WAN interface=ether7
+/interface list member add list=LAN interface=ether1
 /interface list member add list=LAN interface=ether2
 /interface list member add list=LAN interface=ether3
-/interface list member add list=LAN interface=ether7
 /interface list member add list=MGMT interface=ether4
 /interface list member add list=MGMT interface=ether5
 /interface list member add list=MGMT interface=ether6
@@ -74,10 +79,10 @@ set sfp-sfpplus1 comment="libre / reserva"
 # BLOQUE 3/7 · Direcciones IP y DNS
 # ==================================================================
 /ip address
-add address=100.64.2.2/30 interface=ether1 comment=WAN
+add address=100.64.2.2/30 interface=ether7 comment=WAN
 add address=10.20.1.1/30 interface=ether2 comment=hAP-1B
 add address=10.20.5.2/30 interface=ether3 comment=hAP-4B-cierre-anillo
-add address=10.99.0.2/30 interface=ether7 comment=inter-sede
+add address=10.99.0.2/30 interface=ether1 comment=inter-sede
 
 /ip dns set allow-remote-requests=yes servers=1.1.1.1,8.8.8.8
 
@@ -115,7 +120,7 @@ add chain=output protocol=ospf action=notrack
 /routing ospf interface-template
 add area=backbone interfaces=ether2 type=ptp cost=10 hello-interval=2s dead-interval=8s
 add area=backbone interfaces=ether3 type=ptp cost=10 hello-interval=2s dead-interval=8s
-add area=backbone interfaces=ether7 type=ptp cost=100 hello-interval=5s dead-interval=20s
+add area=backbone interfaces=ether1 type=ptp cost=100 hello-interval=5s dead-interval=20s
 add area=backbone interfaces=lo passive
 
 # ---------------------------------------------------------------------

@@ -100,14 +100,14 @@ distintas necesitás dos `.npk` y es un error fácil de cometer el día de la de
 
 ### 1.5 Internet en casa vs. en el laboratorio
 
-En casa, `ether1` va a un **router doméstico** que entrega `192.168.0.x` por DHCP: el WAN del plan
+En casa, `ether7` va a un **router doméstico** que entrega `192.168.0.x` por DHCP: el WAN del plan
 (`100.64.2.2/30`) queda sin usar y la ruta `default-ISP` aparece con la bandera `I` (inactiva). **Eso es
 lo correcto**, no un error de configuración.
 
 Para tener internet mientras se configura (bajar el `.npk` del contenedor, sincronizar NTP):
 
 ```
-/ip dhcp-client add interface=ether1 disabled=no use-peer-dns=no use-peer-ntp=no comment="PROVISIONAL"
+/ip dhcp-client add interface=ether7 disabled=no use-peer-dns=no use-peer-ntp=no comment="PROVISIONAL"
 ```
 
 `use-peer-dns=no` es obligatorio en la práctica: si no, el ISP reemplaza los DNS `1.1.1.1,8.8.8.8` del

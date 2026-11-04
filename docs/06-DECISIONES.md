@@ -219,13 +219,14 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
     Cubre Norte (`10.10/16`), inter-sede (`10.99/30`) y Sur (`10.20/8`) con una sola entrada.
   - `preparar-red.ps1` crea la regla `Campus UNIS ICMPv4 echo` (tipo 8, perfiles Privado y Dominio).
   - `GW-A.rsc` agrega el registro DNS estático `prueba-dns.campus → 10.10.255.1` para que la prueba DNS
-    de `verificar.ps1` pase **sin Internet y sin el Pi-hole**, ya que la WAN (`ether1`) todavía no tiene
+    de `verificar.ps1` pase **sin Internet y sin el Pi-hole**, ya que la WAN (`ether1` en ese momento,
+    hoy `ether7` por D-16) todavía no tiene
     enlace y el paquete `container` no está instalado en GW-A.
 - **Consecuencia:** la ruta `10.0.0.0/8` es una decisión de laboratorio: si la laptop se conecta a otra
   red que use `10.0.0.0/8`, hay que quitarla (`Remove-NetRoute -DestinationPrefix 10.0.0.0/8`). Queda
   documentada como W-9 en `08-SERVIDOR.md`.
 - **Riesgo residual:** ninguna de las dos correcciones sustituye el cableado. S-05a/S-05b siguen
-  requiriendo el enlace `GW-A ether7 ↔ SXT-A` (hoy **sin link**, `10.99.0.0/30` inactiva).
+  requiriendo el enlace `GW-A ether1 ↔ SXT-A` (hoy **sin link**, `10.99.0.0/30` inactiva).
 - **Decisor:** André.
 
 ---
@@ -239,8 +240,8 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
   `ether10` y un puerto asignado a otro grupo (`ether7`, `10.0.1.1/25`).
 - **Decisión:**
   - `sfp1` (e1) = cliente DHCP hacia el laboratorio (`172.18.4.18/24`, gateway `172.18.4.1`).
-  - `ether2` (e2) = `100.64.1.1/30` → `GW-A ether1` (`100.64.1.2/30`).
-  - `ether3` (e3) = `100.64.2.1/30` → `GW-B ether1` (`100.64.2.2/30`).
+  - `ether2` (e2) = `100.64.1.1/30` → `GW-A ether7` (`100.64.1.2/30`).
+  - `ether3` (e3) = `100.64.2.1/30` → `GW-B ether7` (`100.64.2.2/30`).
   - Una sola regla NAT (`masquerade out-interface=sfp1`). **Sin** DHCP, DNS (`allow-remote-requests=no`),
     OSPF, firewall ni bridge: el equipo solo enruta y traduce.
   - Se elimina la LAN de fábrica (`192.168.26.1/24`, `dhcp_pool0`, `dhcp1` y su network).
@@ -255,6 +256,40 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
   (`DAd` por 172.18.4.1, distance 1), una sola regla en `ip firewall nat print`,
   `tool ping 1.1.1.1` = 3/3 a ~2 ms.
 - **Evidencia:** `configs/rsc/ROUTER-ISP.rsc` + `configs/backups/ROUTER-ISP-2026-11-03.{backup,rsc}`.
+- **Decisor:** André.
+
+---
+
+## D-16 · La WAN sale por `ether7` y el inter-sede entra por `ether1` (PoE-in)
+
+- **Estado:** TOMADA — 03/11/2026
+- **Contexto:** el `RB5009UG+S+IN` tiene **PoE-in 802.3af/at en `ether1`** (el único puerto con esa
+  capacidad; no tiene PoE-out). Las antenas SXT del enlace inter-sede vienen con su inyector PoE, así que
+  el cable de la antena puede **alimentar el GW** y a la vez transportar el enlace inter-sede. Ese mismo
+  cable estaba asignado a la WAN, lo que obligaba a mantener enchufada la fuente de 24 V y dejaba el PoE
+  sin uso.
+- **Decisión:**
+  - `ether1` (2.5G) = **inter-sede** → SXT-A / SXT-B (`10.99.0.1/30` / `10.99.0.2/30`) y **PoE-in**
+    alimentando el GW desde el inyector de la antena.
+  - `ether7` (1G) = **WAN** → `ROUTER-ISP ether2` / `ether3` (`100.64.1.2/30` / `100.64.2.2/30`).
+  - Las **direcciones IP no cambian**, solo el puerto físico. El lado del `ROUTER-ISP` **no se toca**
+    (`ether2`/`ether3` siguen siendo las WAN de Norte y Sur).
+  - Ajustes en los dos GW: `comment` de los puertos, miembros de las listas `WAN`/`LAN`, `ip address` y el
+    `interface-template` de OSPF (el inter-sede pasa a `ether1`, mismo costo 100 y timers 5 s/20 s).
+- **Por qué es seguro:** NAT, ruta por defecto, firewall, `originate-default`, costos y timers se mantienen
+  idénticos; solo cambia el nombre de la interfaz. OSPF sigue viendo un `ptp` de costo 100 hacia la sede
+  vecina y la WAN sigue en la lista `WAN` para el `masquerade`.
+- **Consecuencia:** la WAN queda a **1 Gbps** (era 2.5G) y el inter-sede sube a 2.5G. Es irrelevante: el
+  uplink del laboratorio y el enlace inalámbrico (~100 Mbps) son el cuello real.
+- **Riesgo residual:** el RB5009 **no arranca con PoE pasivo de 24 V**; el inyector debe entregar
+  802.3af/at (48 V). Si el inyector de la SXT es pasivo, se mantiene la fuente de 24 V en `ether1` y el
+  diseño sigue funcionando igual (el puerto transporta datos sin importar quién alimenta).
+- **Desviación del diagrama:** el diagrama v3 dibuja la antena en el puerto 7 y la WAN en el 1. Este cambio
+  los invierte a propósito; si el catedrático pregunta, el argumento es el PoE-in del `ether1` (alimentar el
+  GW con el cable de la antena y liberar una toma de corriente).
+- **Nota sobre evidencia:** `docs/11-EVIDENCIA-OSPF.md` se conserva tal cual: la prueba se hizo con el
+  mapa de puertos **anterior** (inter-sede en `ether7`). Al repetirla, el comando es el mismo pero sobre
+  `ether1`.
 - **Decisor:** André.
 
 

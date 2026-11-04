@@ -15,8 +15,8 @@ Hace el papel del "Router ISP" del diagrama v3. No pertenece a ninguna sede y **
 | Interfaz | Dirección | Rol |
 |---|---|---|
 | `sfp1` (e1) | `172.18.4.18/24` (DHCP, gateway `172.18.4.1`) | uplink al laboratorio |
-| `ether2` (e2) | `100.64.1.1/30` | WAN de Sede Norte → `GW-A ether1` (`100.64.1.2/30`) |
-| `ether3` (e3) | `100.64.2.1/30` | WAN de Sede Sur → `GW-B ether1` (`100.64.2.2/30`) |
+| `ether2` (e2) | `100.64.1.1/30` | WAN de Sede Norte → `GW-A ether7` (`100.64.1.2/30`) |
+| `ether3` (e3) | `100.64.2.1/30` | WAN de Sede Sur → `GW-B ether7` (`100.64.2.2/30`) |
 | `ether7` | `10.0.1.1/25` | otro grupo ("Puerto 7 - Rodrigo Quiroa") — **no se toca** |
 
 Una sola regla NAT (`masquerade out-interface=sfp1`). Sin DHCP, DNS, OSPF, firewall ni bridge.
@@ -31,17 +31,18 @@ Config: `configs/rsc/ROUTER-ISP.rsc` · backups: `configs/backups/` · decisión
 
 | Interfaz | Dirección | Rol |
 |---|---|---|
-| `ether1` (2.5G) | `100.64.1.2/30` | WAN hacia router ISP (gateway `100.64.1.1`) |
+| `ether7` | `100.64.1.2/30` | WAN hacia router ISP (gateway `100.64.1.1`) |
 | `ether2` | `10.10.1.1/30` | enlace al anillo → hAP-1A |
 | `ether3` | `10.10.6.2/30` | enlace al anillo → hAP-5A |
-| `ether7` | `10.99.0.1/30` | hacia SXT-A (puente L2 inter-sede) |
+| `ether1` (2.5G) | `10.99.0.1/30` | hacia SXT-A (puente L2 inter-sede) · **PoE-in: alimenta el GW** |
 | `loopback` | `10.10.255.1/32` | router-id OSPF + IP de DNS que entrega el DHCP |
 | `veth1` | `10.10.254.1/24` | red del container |
 | `usb1` | — | root-dir del container Pi-hole |
 | — | `10.10.254.53` | Pi-hole (container) |
 
-> Equipo real: `RB5009UG+S+IN` (1× 2.5G + 7× 1G, USB 3.0, **sin PoE-out**).
-> `ether4-6` y `ether8` quedan libres como reserva.
+> Equipo real: `RB5009UG+S+IN` (1× 2.5G + 7× 1G, USB 3.0, **sin PoE-out**, **PoE-in 802.3af/at en `ether1`**).
+> Desde **D-16** la WAN vive en `ether7` y el inter-sede en `ether1`, para que el cable de la antena
+> alimente el GW por PoE-in. `ether4-6` y `ether8` quedan libres como reserva.
 
 ### 1.2 Anillo Norte (6 nodos, 6 enlaces /30)
 

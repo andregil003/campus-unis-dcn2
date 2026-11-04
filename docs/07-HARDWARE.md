@@ -22,8 +22,8 @@ del fabricante, no contra suposiciones.
 | RouterOS | **7.24.5** |
 | Identidad | `ROUTER-ISP` |
 | Uplink | `sfp1` por DHCP (`172.18.4.18/24`, gateway `172.18.4.1`) |
-| WAN Norte | `ether2` `100.64.1.1/30` → `GW-A ether1` |
-| WAN Sur | `ether3` `100.64.2.1/30` → `GW-B ether1` |
+| WAN Norte | `ether2` `100.64.1.1/30` → `GW-A ether7` |
+| WAN Sur | `ether3` `100.64.2.1/30` → `GW-B ether7` |
 | Reservado | `ether7` `10.0.1.1/25` (otro grupo) · `ether5` consola |
 | Config | `configs/rsc/ROUTER-ISP.rsc` · backup en `configs/backups/` |
 
@@ -72,17 +72,19 @@ Con los dos en 7.24.2 se necesita **un solo** `container-7.24.2-arm64.npk` (R-17
 
 | Interfaz | Uso |
 |---|---|
-| `ether1` (2.5G) | WAN al router ISP (`100.64.1.2/30`) |
+| `ether7` | WAN al router ISP (`100.64.1.2/30`) — **D-16** |
 | `ether2` | anillo → hAP-1A (`10.10.1.1/30`) |
 | `ether3` | anillo → hAP-5A (`10.10.6.2/30`) |
-| `ether7` | SXT-A (`10.99.0.1/30`) — coincide con el diagrama del catedrático |
+| `ether1` (2.5G) | SXT-A (`10.99.0.1/30`) · PoE-in alimenta el GW — **D-16** |
 | `ether4-6`, `ether8` | libres (reserva) |
 | `usb1` | root-dir del container Pi-hole |
 
 ## 4. Consecuencias prácticas
 
-1. **Energía:** no hay PoE en ningún punto de la cadena. Cada hAP con su fuente USB-C + el RB5009 con
-   su fuente de 24 V + la Pi. Para el rack: **regleta con ≥ 6 tomas** y velcro para el cableado de poder.
+1. **Energía:** los hAP no aceptan PoE (fuente USB-C cada uno). Los **GW sí** van alimentados por
+   **PoE-in en `ether1`** desde el inyector de la antena SXT (D-16), así que su fuente de 24 V queda de
+   repuesto. Para el rack: **regleta con ≥ 6 tomas** y velcro para el cableado de poder.
+   *Verificar que el inyector entregue 802.3af/at (48 V): el RB5009 no arranca con PoE pasivo de 24 V.*
 2. **Repuestos:** 9 hAP = exactamente 5 + 4, **sin margen**. Si uno falla el día de la defensa, no hay
    sustituto (R-14).
 3. **WiFi 2.4 GHz:** definir canales (1, 6, 11) entre los 5 nodos para no autointerferirse (R-15).
