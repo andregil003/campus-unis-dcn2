@@ -35,6 +35,15 @@ function Pendiente($id, $prueba, $detalle) {
 
 Write-Host "== Verificacion del servidor $IP ==" -ForegroundColor Cyan
 
+# La tarea de arranque corre como SYSTEM: solo un Administrador puede leerla.
+# Sin elevacion, S-06 daria un FALSO FAIL.
+$soyAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+              [Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $soyAdmin) {
+  Write-Host "AVISO: sin privilegios de Administrador. S-06 y W-1 pueden dar falso FAIL." -ForegroundColor Yellow
+  Write-Host "       Reabre PowerShell como Administrador para una verificacion fiable." -ForegroundColor Yellow
+}
+
 # S-01 · IP fija configurada en esta maquina
 $ips = Get-NetIPAddress -AddressFamily IPv4 | Select-Object -ExpandProperty IPAddress
 Registrar "S-01" "IP $IP presente en el equipo" ($ips -contains $IP) ($ips -join ", ")
@@ -77,10 +86,14 @@ if ($SkipPeer) {
 }
 
 # S-06 · nginx como servicio / tarea de arranque
-$svc = Get-Service -Name "nginx*" -ErrorAction SilentlyContinue
-$tarea = Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.TaskName -match "nginx|campus" }
-Registrar "S-06" "Arranque automatico configurado" (($svc -and $svc.Status -eq "Running") -or [bool]$tarea) `
-  $(if ($svc) { "servicio " + ($svc.Name -join ",") + " -> " + ($svc.Status -join ",") } elseif ($tarea) { "tarea " + ($tarea.TaskName -join ",") } else { "sin servicio ni tarea" })
+if (-not $soyAdmin) {
+  Pendiente "S-06" "Arranque automatico configurado" "requiere Administrador para leer la tarea de SYSTEM"
+} else {
+  $svc = Get-Service -Name "nginx*" -ErrorAction SilentlyContinue
+  $tarea = Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.TaskName -match "nginx|campus" }
+  Registrar "S-06" "Arranque automatico configurado" (($svc -and $svc.Status -eq "Running") -or [bool]$tarea) `
+    $(if ($svc) { "servicio " + ($svc.Name -join ",") + " -> " + ($svc.Status -join ",") } elseif ($tarea) { "tarea " + ($tarea.TaskName -join ",") } else { "sin servicio ni tarea" })
+}
 
 # Extra: regla de firewall para el puerto 80
 $fw = @()

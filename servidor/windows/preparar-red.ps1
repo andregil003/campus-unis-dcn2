@@ -234,9 +234,11 @@ if ($SkipVerify) {
 } else {
   $verificador = Join-Path $PSScriptRoot "verificar.ps1"
   if (Test-Path $verificador) {
-    $argsVerif = @{ IP = $IP; Peer = $Peer; DNS = $DNS }
-    if ($SkipPeer) { $argsVerif.SkipPeer = $true }
-    & powershell -ExecutionPolicy Bypass -File $verificador @argsVerif
+    # OJO: no usar splatting de hashtable sobre powershell.exe (los switch llegan como
+    # cadena y fallan con "no se puede convertir System.String a SwitchParameter").
+    $argVerif = @("-ExecutionPolicy", "Bypass", "-File", $verificador, "-IP", $IP, "-Peer", $Peer, "-DNS", $DNS)
+    if ($SkipPeer) { $argVerif += "-SkipPeer" }
+    & powershell @argVerif
   } else {
     AVISO "no se encontro verificar.ps1 junto a este script"
   }
