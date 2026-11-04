@@ -290,6 +290,13 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
 - **Nota sobre evidencia:** `docs/11-EVIDENCIA-OSPF.md` se conserva tal cual: la prueba se hizo con el
   mapa de puertos **anterior** (inter-sede en `ether7`). Al repetirla, el comando es el mismo pero sobre
   `ether1`.
+- **Aplicado en el equipo (03/11/2026):** **GW-A** (`RB5009UG+S+`, serial `HFB09D3DPSG`, RouterOS 7.24.2)
+  ya tiene el swap hecho por SSH, verificado en vivo: `100.64.1.2/30` en `ether7`, `10.99.0.1/30` en
+  `ether1`, `WAN=ether7`, OSPF `ptp` en `ether1` con costo 100 y 5 s/20 s, y los dos vecinos del anillo
+  (hAP-1A y hAP-5A) siguieron `Full` sin cortarse. Backup previo y posterior en
+  `configs/backups/GW-A-2026-11-03-{antes-swap,post-d16}.rsc`.
+  **GW-B sigue PENDIENTE**: no hay ruta hacia él (`10.99.0.2` y `10.20.255.1` no responden) porque la Sede
+  Sur no está cableada, y no aparece en ningún barrido del laboratorio.
 - **Decisor:** André.
 
 ---
@@ -304,6 +311,9 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
   aparece el `RB5009UG+S+IN` que tenemos. En el UG el submenú `/interface ethernet poe` no existe, así que
   cualquier `poe-out=` responde `bad command name poe`. El único PoE del UG es **PoE-in en `ether1`**
   (802.3af/at, 48 V), que **recibe** energía, no la entrega.
+  **Probado en el equipo real (GW-A, 03/11/2026):** `/interface ethernet poe print` →
+  `bad command name poe (line 1 column 21)`, y `/interface ethernet print` no muestra ninguna columna
+  `poe-out`. `/system routerboard print` confirma `model: RB5009UG+S+`.
 - **Decisión:** no se agrega configuración de PoE a los `.rsc` (se deja un bloque **comentado** al final de
   cada GW con el comando que aplicaría solo en un `UPr+S+`). La antena se alimenta con su inyector, que va
   entre el GW y la antena y **no** entrega PoE al router.
