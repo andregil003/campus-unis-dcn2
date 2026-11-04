@@ -208,3 +208,22 @@ add area=backbone interfaces=lo passive
 # Si el ISP cae pero el cable sigue arriba, el default no se retira.
 # Mitigacion opcional:
 #   /tool netwatch add host=1.1.1.1 interval=10s timeout=2s down-script="/ip route disable [find comment=\"default-ISP\"]" up-script="/ip route enable [find comment=\"default-ISP\"]"
+
+# ==================================================================
+# BLOQUE 8/8 · PoE-out hacia la antena  --  NO APLICA al RB5009UG
+# ==================================================================
+# VERIFICADO (doc oficial "PoE-Out", tabla de PSE): el RB5009UG+S+IN
+# NO tiene PoE-out y el submenu /interface ethernet poe NO existe en el.
+# Pegar estos comandos en el UG devuelve "bad command name poe".
+# La tabla de PSE con PoE-out lista al RB5009UPr+S+ (8 puertos), no al UG.
+#
+# Es decir: el GW NO puede alimentar la SXT. La antena se alimenta con su
+# inyector PoE (que va entre el GW y la antena, y NO entrega PoE al GW).
+#
+# SOLO si el equipo resulta ser RB5009UPr+S+ y se quiere alimentar la SXT
+# desde el GW (un solo cable = datos + energia):
+#   /interface ethernet poe set ether1 poe-out=forced-on poe-priority=10
+#   /interface ethernet poe monitor ether1
+# forced-on (no auto-on) porque la SXT usa PoE PASIVO y no negocia 802.3af.
+# Con fuente de 24 V el UPr entrega ~24 V pasivos: dentro del rango de la SXT.
+# Con fuente de 48 V NO conectar la SXT: el UPr no tiene voltaje conmutable.

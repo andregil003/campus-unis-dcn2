@@ -165,3 +165,22 @@ add area=backbone interfaces=lo passive
 # /container print                 -> running
 # http://10.20.254.53:3000         -> panel de AdGuard
 # nslookup unis.edu.gt 10.20.255.1 -> responde
+
+# ==================================================================
+# BLOQUE 8/8 · PoE-out hacia la antena  --  NO APLICA al RB5009UG
+# ==================================================================
+# VERIFICADO (doc oficial "PoE-Out", tabla de PSE): el RB5009UG+S+IN
+# NO tiene PoE-out y el submenu /interface ethernet poe NO existe en el.
+# Pegar estos comandos en el UG devuelve "bad command name poe".
+# La tabla de PSE con PoE-out lista al RB5009UPr+S+ (8 puertos), no al UG.
+#
+# Es decir: el GW NO puede alimentar la SXT. La antena se alimenta con su
+# inyector PoE (que va entre el GW y la antena, y NO entrega PoE al GW).
+#
+# SOLO si el equipo resulta ser RB5009UPr+S+ y se quiere alimentar la SXT
+# desde el GW (un solo cable = datos + energia):
+#   /interface ethernet poe set ether1 poe-out=forced-on poe-priority=10
+#   /interface ethernet poe monitor ether1
+# forced-on (no auto-on) porque la SXT usa PoE PASIVO y no negocia 802.3af.
+# Con fuente de 24 V el UPr entrega ~24 V pasivos: dentro del rango de la SXT.
+# Con fuente de 48 V NO conectar la SXT: el UPr no tiene voltaje conmutable.

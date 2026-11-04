@@ -292,4 +292,25 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
   `ether1`.
 - **Decisor:** André.
 
+---
+
+## D-17 · El GW no puede alimentar la antena: no hay PoE-out que configurar
+
+- **Estado:** CERRADA — 03/11/2026 (chequeo técnico, sin cambios de configuración)
+- **Contexto:** se preguntó si en los GW hacía falta configuración adicional para que saliera energía por
+  Ethernet hacia las antenas SXT del enlace inter-sede.
+- **Verificación:** la página oficial *PoE-Out* de RouterOS incluye la tabla de equipos que pueden ser PSE;
+  ahí aparece el **`RB5009UPr+S+`** (8 puertos PoE-out, pasivo 18-30 V / 30-57 V + 802.3af/at) y **no**
+  aparece el `RB5009UG+S+IN` que tenemos. En el UG el submenú `/interface ethernet poe` no existe, así que
+  cualquier `poe-out=` responde `bad command name poe`. El único PoE del UG es **PoE-in en `ether1`**
+  (802.3af/at, 48 V), que **recibe** energía, no la entrega.
+- **Decisión:** no se agrega configuración de PoE a los `.rsc` (se deja un bloque **comentado** al final de
+  cada GW con el comando que aplicaría solo en un `UPr+S+`). La antena se alimenta con su inyector, que va
+  entre el GW y la antena y **no** entrega PoE al router.
+- **Consecuencia:** el rack sigue necesitando una toma por equipo (GW + 5 hAP + servidor). El `ether1` puede
+  usarse para alimentar el **GW** con un inyector 802.3af/at, pero **no** con el inyector pasivo de la SXT.
+- **Alternativas si se quiere alimentar antenas desde un solo equipo:** switch PoE (`CSS610-8P-2S+IN`,
+  `CRS112-8P-4S-IN`, `hEX PoE`) o cambiar el GW por `RB5009UPr+S+`.
+- **Decisor:** André.
+
 

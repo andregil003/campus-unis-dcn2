@@ -68,6 +68,26 @@ Con los dos en 7.24.2 se necesita **un solo** `container-7.24.2-arm64.npk` (R-17
 | RouterOS | v7, licencia 4 | `/interface/wifi` (paquete *wifi*), no `/interface/wireless` |
 | Consumo | 8 W máx | 5 equipos ≈ 40 W |
 
+### PoE: qué se puede y qué no (verificado 03/11/2026)
+
+| Pregunta | Respuesta | Fuente |
+|---|---|---|
+| ¿El GW puede **alimentar** la antena? | **No.** El `RB5009UG+S+IN` no tiene PoE-out y el menú `/interface ethernet poe` no existe en ese equipo | Doc oficial *PoE-Out*, tabla de PSE (lista al `RB5009UPr+S+`, no al UG) |
+| ¿El GW puede **recibir** energía por PoE? | Sí, **solo `ether1`**, 802.3af/at (48 V) | Ficha del RB5009UG+S+IN |
+| ¿El inyector de la SXT puede alimentar el GW? | **No.** El inyector pasivo va *router → inyector → antena*; el puerto de datos no entrega PoE al router | Diseño del inyector pasivo |
+| ¿Hay que configurar algo en RouterOS para el PoE del UG? | **Nada.** No existe el menú; cualquier `poe-out=` da `bad command name poe` | Probado por sintaxis |
+
+**Si algún día se cambia a `RB5009UPr+S+`** (sí tiene 8 puertos PoE-out), el comando es:
+
+```
+/interface ethernet poe set ether1 poe-out=forced-on poe-priority=10
+/interface ethernet poe monitor ether1
+```
+
+`forced-on` porque la SXT usa **PoE pasivo** (no negocia 802.3af); con `auto-on` el PSE no la detectaría.
+Con fuente de 24 V entrega ~24 V (dentro del rango de la SXT); **con fuente de 48 V no conectar la SXT**.
+Ese bloque queda comentado al final de `GW-A.rsc` / `GW-B.rsc`.
+
 ## 3. Plano de puertos actualizado (GW-A)
 
 | Interfaz | Uso |
