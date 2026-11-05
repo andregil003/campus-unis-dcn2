@@ -28,7 +28,7 @@
 # ==================================================================
 /interface ethernet
 set ether1 comment="hAP-5A/ether1 -> hAP-4A/ether2"
-set ether2 comment="hAP-5A/ether2 -> GW-A/ether1"
+set ether2 comment="hAP-5A/ether2 -> GW-A/ether3"
 set ether3 comment="hAP-5A/ether3 -> libre"
 set ether4 comment="hAP-5A/ether4 -> puerto de pruebas (opcional)"
 

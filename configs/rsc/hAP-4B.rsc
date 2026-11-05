@@ -28,15 +28,15 @@
 # ==================================================================
 /interface ethernet
 set ether1 comment="hAP-4B/ether1 -> hAP-3B/ether2"
-set ether2 comment="hAP-4B/ether2 -> GW-B/ether1"
+set ether2 comment="hAP-4B/ether2 -> GW-B/ether3"
 set ether3 comment="hAP-4B/ether3 -> libre"
-set ether4 comment="hAP-4B/ether4 -> puerto de pruebas (opcional)"
+set ether4 comment="hAP-4B/ether4 -> puerto de pruebas"
 
 # 'lo' ya existe: es el loopback interno de RouterOS (visible desde ~7.14).
 # NO crear un bridge con ese nombre: da 'already have interface with name lo'.
 # Si algun equipo no lo tuviera, crear el reemplazo:
 #   /interface bridge add name=lo-dummy  y  usar interface=lo-dummy
-/ip address add address=10.20.255.14/32 interface=lo comment=loopback-router-id
+/ip address add address=10.20.255.14/32 interface=lo comment=loopback-routerid
 
 /ip address
 add address=10.20.4.2/30 interface=ether1 comment=hAP-3B
@@ -83,7 +83,7 @@ add chain=input action=accept protocol=ospf
 add chain=input action=accept in-interface=br-wifi comment="clientes WiFi"
 add chain=input action=accept in-interface=ether1
 add chain=input action=accept in-interface=ether2
-add chain=input action=accept in-interface=ether3 comment="servidor / consola (anti-bloqueo)"
+add chain=input action=accept in-interface=ether3 comment="servidor / consola"
 add chain=input action=accept in-interface=lo
 add chain=input action=drop
 add chain=forward action=accept connection-state=established,related
