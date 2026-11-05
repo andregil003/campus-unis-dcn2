@@ -8,9 +8,9 @@
 #
 # MAPA DE PUERTOS (coincide con el diagrama: e1/e2/e3)
 #   sfp1    -> uplink al laboratorio, DHCP              (e1: lab DHCP)
-#   ether2  -> GW-A ether1   100.64.1.1/30              (e2: Sede Norte)
-#   ether3  -> GW-B ether1   100.64.2.1/30              (e3: Sede Sur)
-#   ether5  -> consola del grupo (sin IP, WinBox por MAC)
+#   ether2  -> GW-A ether7   100.64.1.1/30              (e2: Norte; el cable va al ether7 de GW-A)
+#   ether3  -> DANADO (sin enlace). No usar.
+#   ether5  -> GW-B ether1   100.64.2.1/30              (e5: Sur, reemplaza al ether3 danado)
 #   ether7  -> 10.0.1.1/25 "Puerto 7 - Rodrigo Quiroa"  (OTRO GRUPO - no tocar)
 #   ether10 -> libre (se elimino la LAN de fabrica 192.168.26.0/24)
 #
@@ -35,7 +35,7 @@
 # ==================================================================
 /system identity set name=ROUTER-ISP
 /system clock set time-zone-name=America/Guatemala
-/system note set show-at-login=no note="DCN2 Campus UNIS - ROUTER-ISP (RB3011) - e2=Norte 100.64.1.1/30 / e3=Sur 100.64.2.1/30"
+/system note set show-at-login=no note="DCN2 Campus UNIS - ROUTER-ISP (RB3011) - e2=Norte 100.64.1.1/30 / e5=Sur 100.64.2.1/30"
 
 # ==================================================================
 # BLOQUE 2/3 · Uplink, una /30 por sede y NAT
@@ -44,12 +44,13 @@
 /ip dhcp-client add interface=sfp1 name=client1
 
 /interface ethernet
-set ether2 comment="ISP/e2 -> GW-A/ether1 100.64.1.1/30 [Norte]"
-set ether3 comment="ISP/e3 -> GW-B/ether1 100.64.2.1/30 [Sur]"
+set ether2 comment="ISP/e2 -> GW-A/ether7 100.64.1.1/30 [Norte]"
+set ether3 comment="DANADO - no-link"
+set ether5 comment="ISP/e5 -> GW-B/ether1 100.64.2.1/30 [Sur] (ether3 danado)"
 
 /ip address
 add address=100.64.1.1/30 interface=ether2 comment="WAN-Norte-GW-A"
-add address=100.64.2.1/30 interface=ether3 comment="WAN-Sur-GW-B"
+add address=100.64.2.1/30 interface=ether5 comment="WAN-Sur-GW-B"
 
 # Una sola regla NAT en el ISP, hacia el uplink del laboratorio.
 /ip firewall nat add chain=srcnat action=masquerade out-interface=sfp1 comment="salida a Internet (uplink lab)"
@@ -65,7 +66,7 @@ add address=100.64.2.1/30 interface=ether3 comment="WAN-Sur-GW-B"
 #   -> exactamente 1 regla masquerade
 # /tool ping 1.1.1.1 count=3        -> internet del laboratorio OK
 # /tool ping 100.64.1.2 count=3     -> GW-A responde (cable en ether2)
-# /tool ping 100.64.2.2 count=3     -> GW-B responde (cable en ether3)
+# /tool ping 100.64.2.2 count=3     -> GW-B responde (cable en ether5)
 #
 # NOTA: si las rutas 100.64.x.0/30 salen con la letra I (INACTIVE) es
 # porque el puerto no tiene link. Se activan solas al conectar el GW.

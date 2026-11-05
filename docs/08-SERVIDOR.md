@@ -80,7 +80,7 @@ No es nuestra configuración, pero se coordina porque la nota es compartida.
 | Aspecto | Recomendación (para acordar con Grupo B) |
 |---|---|
 | Sistema | Raspberry Pi OS **Lite** (sin escritorio: 2 GB de RAM dan para más sin entorno gráfico) |
-| IP | `10.20.0.100/24`, gw `10.20.0.1`, en `eth0` hacia `hAP-1B ether3` |
+| IP | `10.20.0.100/24`, gw `10.20.0.1`, en `eth0` hacia `hAP-3B ether3` |
 | Servicio | nginx del repositorio, `systemctl enable --now nginx` ⇒ cumple S-06 |
 | Página y `/health` | mismo esquema que S-03/S-04 para que el `curl` cruzado sea comparable |
 | NTP | `systemd-timesyncd` activo |

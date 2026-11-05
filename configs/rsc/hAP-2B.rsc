@@ -36,7 +36,7 @@ set ether4 comment="hAP-2B/ether4 -> puerto de pruebas (opcional)"
 # NO crear un bridge con ese nombre: da 'already have interface with name lo'.
 # Si algun equipo no lo tuviera, crear el reemplazo:
 #   /interface bridge add name=lo-dummy  y  usar interface=lo-dummy
-/ip address add address=10.20.255.12/32 interface=lo comment=loopback-router-id
+/ip address add address=10.20.255.12/32 interface=lo comment=loopback-routerid
 
 /ip address
 add address=10.20.2.2/30 interface=ether1 comment=hAP-1B

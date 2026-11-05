@@ -23,6 +23,7 @@ SEDES = {
         "gw": "GW-A",
         "dns": "10.10.255.1",
         "server": "10.10.0.1/24",
+        "server_idx": 0,  # el servidor va en hAP-1A ether3
         "haps": [
             # nombre, ether1 (uplink), ether2 (downlink), wifi, canal, loopback
             ("hAP-1A", "10.10.1.2/30", "10.10.2.1/30", "192.168.1.1/24", 2412, "10.10.255.11"),
@@ -37,6 +38,7 @@ SEDES = {
         "gw": "GW-B",
         "dns": "10.20.255.1",
         "server": "10.20.0.1/24",
+        "server_idx": 2,  # diagrama v3: el servidor Sur va en hAP-3B ether3
         "haps": [
             ("hAP-1B", "10.20.1.2/30", "10.20.2.1/30", "192.168.11.1/24", 2412, "10.20.255.11"),
             ("hAP-2B", "10.20.2.2/30", "10.20.3.1/30", "192.168.12.1/24", 2437, "10.20.255.12"),
@@ -45,6 +47,10 @@ SEDES = {
         ],
     },
 }
+
+# Archivos que se mantienen A MANO (reflejan la configuracion real del equipo).
+# El generador NO los sobrescribe.
+MANUALES = {"hAP-1B", "hAP-2B", "hAP-3B", "hAP-4B"}  # 05/11/2026: reflejan el export real (hAP-3B: bridge-wifi, ospf-sur, pool .10-.200, WiFi directo en wifi1; hAP-2B/4B: comentarios del equipo)
 
 WIFI_PASS = "CambiarClaveWiFi2026"
 ADMIN_PASS = "ValoValoValo2026"
@@ -61,7 +67,7 @@ def bloques(sede_key: str, idx: int):
     prefijo = gw_wifi.rsplit(".", 1)[0]
     red = f"{prefijo}.0/{plen}"
     ssid = f"UNIS-{sede_key}{idx + 1}"
-    es_servidor = idx == 0
+    es_servidor = idx == sede["server_idx"]
 
     b1 = [
         f"/system identity set name={nombre}",
@@ -75,7 +81,7 @@ def bloques(sede_key: str, idx: int):
 
     b2 = [
         f'set ether1 comment="{nombre}/ether1 -> {prev}/ether2"',
-        f'set ether2 comment="{nombre}/ether2 -> {next_}/ether1"',
+        f'set ether2 comment="{nombre}/ether2 -> {next_}/ether{3 if nombre == "hAP-5A" else 1}"',
         f'set ether3 comment="{nombre}/ether3 -> {"servidor de sede" if es_servidor else "libre"}"',
         f'set ether4 comment="{nombre}/ether4 -> puerto de pruebas (opcional)"',
     ]
@@ -183,6 +189,9 @@ def main() -> None:
     for sede_key in SEDES:
         for idx in range(len(SEDES[sede_key]["haps"])):
             lista, nombre, ssid = bloques(sede_key, idx)
+            if nombre in MANUALES:
+                print(f"  {nombre}.rsc  (manual, no se regenera)")
+                continue
             sede = SEDES[sede_key]
             prev = sede["gw"] if idx == 0 else sede["haps"][idx - 1][0]
             next_ = sede["gw"] if idx == len(sede["haps"]) - 1 else sede["haps"][idx + 1][0]

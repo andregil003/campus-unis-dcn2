@@ -29,8 +29,8 @@
 /interface ethernet
 set ether1 comment="hAP-1B/ether1 -> GW-B/ether2"
 set ether2 comment="hAP-1B/ether2 -> hAP-2B/ether1"
-set ether3 comment="hAP-1B/ether3 -> servidor de sede"
-set ether4 comment="hAP-1B/ether4 -> puerto de pruebas (opcional)"
+set ether3 comment="hAP-1B/ether3 -> libre"
+set ether4 comment="hAP-1B/ether4 -> puerto de pruebas"
 
 # 'lo' ya existe: es el loopback interno de RouterOS (visible desde ~7.14).
 # NO crear un bridge con ese nombre: da 'already have interface with name lo'.
@@ -41,7 +41,6 @@ set ether4 comment="hAP-1B/ether4 -> puerto de pruebas (opcional)"
 /ip address
 add address=10.20.1.2/30 interface=ether1 comment=GW-B
 add address=10.20.2.1/30 interface=ether2 comment=hAP-2B
-add address=10.20.0.1/24 interface=ether3 comment="segmento del servidor"
 
 # ==================================================================
 # BLOQUE 3/5 · WiFi y DHCP  --  SSID, seguridad, bridge, pool y DNS
@@ -72,7 +71,6 @@ add area=backbone interfaces=ether1 type=ptp cost=10 hello-interval=2s dead-inte
 add area=backbone interfaces=ether2 type=ptp cost=10 hello-interval=2s dead-interval=8s
 add area=backbone interfaces=br-wifi passive comment="se anuncia, no forma vecinos"
 add area=backbone interfaces=lo passive
-add area=backbone interfaces=ether3 passive comment="segmento del servidor"
 
 # ==================================================================
 # BLOQUE 5/5 · Firewall  --  input con DROP final (el equipo NO lleva NAT)

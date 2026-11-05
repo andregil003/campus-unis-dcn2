@@ -34,14 +34,14 @@
 | Sede | Sur (Grupo B) |
 | Hostname | `campus-sur` |
 | IP del servidor | `10.20.0.100/24` |
-| Gateway | `10.20.0.1` (= `hAP-1B` **ether3**) |
+| Gateway | `10.20.0.1` (= `hAP-3B` **ether3**) |
 | DNS | `10.20.255.1` (= loopback de GW-B) |
 | Interfaz | `eth0` (RJ45 de la Pi) |
 | Puerto | `80/tcp` |
 | Página | `/var/www/campus/index.html` |
 
 **Materiales:** Pi 4 de 2 GB · microSD ≥ 8 GB (clase 10 / A1) · **fuente oficial 5 V / 3 A USB-C** ·
-cable Ethernet · laptop con lector de SD · el cable que va al `hAP-1B` **ether3**.
+cable Ethernet · laptop con lector de SD · el cable que va al `hAP-3B` **ether3**.
 
 ---
 
@@ -89,7 +89,7 @@ Las dos funcionan; la guía usa la A y deja la B en §6.4.
 ## 3. Paso 2 — Primer arranque y acceso por SSH
 
 1. Pon la microSD en la Pi.
-2. Conecta el **cable Ethernet a un router que reparta DHCP** (el de tu casa, o el `hAP-1B` si
+2. Conecta el **cable Ethernet a un router que reparta DHCP** (el de tu casa, o el `hAP-3B` si
    tiene DHCP activo). **No** conectes todavía el cable al puerto definitivo si no sabes si
    reparte IP — primero queremos entrar, después fijamos la IP.
 3. Conecta la **fuente oficial de 5 V / 3 A** al puerto USB-C. La Pi arranca sola (LED verde
@@ -230,7 +230,7 @@ sudo nginx -t && sudo systemctl restart nginx
 
 ## 6. Paso 5 — IP fija `10.20.0.100` (S-01)
 
-> ⚠️ **Haz este paso con el cable conectado al `hAP-1B` ether3, no al router de la casa.**
+> ⚠️ **Haz este paso con el cable conectado al `hAP-3B` ether3, no al router de la casa.**
 > Al pasar a IP fija, la IP vieja desaparece y tu sesión SSH se corta. Es normal: reconectas
 > con la IP nueva. Si te quedas sin acceso, el plan B está en §11.1.
 
@@ -421,14 +421,14 @@ Corre esto y **captura la salida completa** (o pégala en el chat del grupo):
 } 2>&1 | tee ~/evidencia-sur.txt
 ```
 
-Y una **foto** de: la Pi encendida con el cable en `hAP-1B ether3`, y la pantalla del celular
+Y una **foto** de: la Pi encendida con el cable en `hAP-3B ether3`, y la pantalla del celular
 o laptop mostrando `http://10.20.0.100` en el navegador.
 
 **Checklist de entrega:**
 
 - [ ] `~/evidencia-sur.txt` completo
 - [ ] Foto del `curl` a `http://10.20.0.100/health` devolviendo `ok`
-- [ ] Foto del cable en `hAP-1B ether3`
+- [ ] Foto del cable en `hAP-3B ether3`
 - [ ] `vcgencmd get_throttled` = `throttled=0x0`
 - [ ] Prueba de corte de energía hecha (§8.1)
 - [ ] T-2 (Sur → Norte) y T-1 (Norte → Sur) con `200 OK`
@@ -448,7 +448,7 @@ o laptop mostrando `http://10.20.0.100` en el navegador.
 | **P-7** | `nginx -t` → `"user" directive is not allowed here` | error explícito | `campus-unis.conf` viejo (era un nginx.conf completo). Reclonar el repo |
 | **P-8** | Tutoriales viejos de WiFi/SSH | `wpa_supplicant.conf` no hace nada; `/boot/ssh` no existe | En Trixie: Imager → Services → SSH. Partición `/boot/firmware` |
 | **P-9** | **Reloj desfasado** → logs sin valor probatorio | `timedatectl` → `synchronized: no` | `systemd-timesyncd` activo (viene por defecto) |
-| **P-10** | Cable malo / puerto equivocado | `ip -br link` dice `NO-CARRIER` en eth0 | Probar otro cable; el puerto es `hAP-1B` **ether3** |
+| **P-10** | Cable malo / puerto equivocado | `ip -br link` dice `NO-CARRIER` en eth0 | Probar otro cable; el puerto es `hAP-3B` **ether3** |
 | **P-11** | Desenchufar sin apagar → SD corrupta | no arranca tras el corte | `sudo shutdown -h now` antes de mover la Pi |
 | **P-12** | Alimentar por GPIO en vez de USB-C | no arranca o arranca inestable | Solo USB-C con la fuente oficial |
 
@@ -469,7 +469,7 @@ sudo nmcli con mod "Wired connection 1" ipv4.gateway ""
 sudo nmcli con up "Wired connection 1"
 ```
 
-4. Repite §6 con el cable ya en el `hAP-1B`.
+4. Repite §6 con el cable ya en el `hAP-3B`.
 
 ### 13.2 Tabla síntoma → causa → arreglo
 

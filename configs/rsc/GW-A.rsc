@@ -10,10 +10,10 @@
 # Cambiar antes de pegar: la clave de admin (BLOQUE 1).
 #
 # MAPA DE PUERTOS
-#   ether1  -> ISP / router del catedratico        100.64.1.2/30
+#   ether1  -> SXT-A inter-sede (PoE-in)          10.99.0.1/30
 #   ether2  -> hAP-1A ether1                        10.10.1.1/30
 #   ether3  -> hAP-5A ether2                        10.10.6.2/30
-#   ether7  -> GW-B ether7 (inter-sede)             10.99.0.1/30
+#   ether7  -> ROUTER-ISP ether2 (WAN)            100.64.1.2/30
 #   ether4/5/6/8 -> consola y libres (lista MGMT)
 #   lo      -> loopback                             10.10.255.1/32
 # =====================================================================
@@ -50,10 +50,10 @@
 # BLOQUE 2/7 · Puertos, listas y loopback
 # ==================================================================
 /interface ethernet
-set ether1 comment="GW-A/ether1 -> ISP (WAN) 100.64.1.2/30"
+set ether1 comment="GW-A/ether1 -> SXT-A 10.99.0.1/30 inter-sede (PoE-in: alimenta el GW)"
 set ether2 comment="GW-A/ether2 -> hAP-1A/ether1 10.10.1.1/30"
 set ether3 comment="GW-A/ether3 -> hAP-5A/ether2 10.10.6.2/30"
-set ether7 comment="GW-A/ether7 -> GW-B/ether7 10.99.0.1/30 inter-sede"
+set ether7 comment="GW-A/ether7 -> ROUTER-ISP/ether2 100.64.1.2/30 WAN"
 set ether4 comment="consola / libre"
 set ether5 comment="consola / libre"
 set ether6 comment="consola / libre"
@@ -63,10 +63,10 @@ set sfp-sfpplus1 comment="libre / reserva"
 /interface list add name=WAN
 /interface list add name=LAN
 /interface list add name=MGMT
-/interface list member add list=WAN interface=ether1
+/interface list member add list=WAN interface=ether7
 /interface list member add list=LAN interface=ether2
 /interface list member add list=LAN interface=ether3
-/interface list member add list=LAN interface=ether7
+/interface list member add list=LAN interface=ether1
 /interface list member add list=MGMT interface=ether4
 /interface list member add list=MGMT interface=ether5
 /interface list member add list=MGMT interface=ether6
@@ -80,10 +80,10 @@ set sfp-sfpplus1 comment="libre / reserva"
 # BLOQUE 3/7 · Direcciones IP y DNS
 # ==================================================================
 /ip address
-add address=100.64.1.2/30 interface=ether1 comment=WAN
+add address=100.64.1.2/30 interface=ether7 comment=WAN
 add address=10.10.1.1/30 interface=ether2 comment=hAP-1A
 add address=10.10.6.2/30 interface=ether3 comment=hAP-5A-cierre-anillo
-add address=10.99.0.1/30 interface=ether7 comment=inter-sede
+add address=10.99.0.1/30 interface=ether1 comment=inter-sede
 
 /ip dns set allow-remote-requests=yes servers=1.1.1.1,8.8.8.8
 
@@ -132,7 +132,7 @@ add chain=output protocol=ospf action=notrack
 /routing ospf interface-template
 add area=backbone interfaces=ether2 type=ptp cost=10 hello-interval=2s dead-interval=8s
 add area=backbone interfaces=ether3 type=ptp cost=10 hello-interval=2s dead-interval=8s
-add area=backbone interfaces=ether7 type=ptp cost=100 hello-interval=5s dead-interval=20s
+add area=backbone interfaces=ether1 type=ptp cost=100 hello-interval=5s dead-interval=20s
 add area=backbone interfaces=lo passive
 
 # ---------------------------------------------------------------------
