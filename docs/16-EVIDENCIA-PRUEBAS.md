@@ -19,7 +19,7 @@
 | Restauración WAN Sede Sur | ✅ PASS | Reconectar → ruta estática propia recupera ACTIVE |
 | Desconexión SXT (anillo interno) | ✅ PASS | Cada anillo sigue enrutando por su cuenta, sedes separadas |
 | DNS filtrado por WiFi (DHCP) | ✅ PASS | `nslookup <bloqueado> 10.10.255.1` → `0.0.0.0` |
-| DNS filtrado con DNS manual `8.8.8.8` | ⚠️ PENDIENTE | Requiere cliente conectado **únicamente** a la red de la sede (sin Tailscale, CloudflareWARP ni otro WiFi) |
+| DNS filtrado con DNS manual `8.8.8.8` | ✅ PASS | Cliente desde otra compu en WiFi `UNIS-A1` con DNS `8.8.8.8`: `valorant.com`, `claude.ai`, `chatgpt.com` → `0.0.0.0` (bloqueados); `google.com` → resuelve normalmente |
 
 ---
 
@@ -189,16 +189,60 @@ nslookup perplexity.ai 10.10.255.1 → 0.0.0.0 (bloqueado)
 nslookup google.com 10.10.255.1 → resuelve normalmente (no bloqueado)
 ```
 
-### Verificación con DNS manual `8.8.8.8` (PENDIENTE)
+### Verificación con DNS manual `8.8.8.8` (VERIFICADO ✅)
 
-**Resultado previo (falló):** El cliente tenía múltiples interfaces activas (Ethernet `10.10.0.100`, WiFi `192.168.12.250`, CloudflareWARP `172.16.0.2`, Tailscale `100.65.166.48`). El tráfico DNS hacia `8.8.8.8` no pasó por GW-A, por lo que el `dst-nat` no lo atrapó.
+**Cliente:** Otra computadora conectada únicamente al WiFi `UNIS-A1` de Sede Norte (sin Tailscale, sin CloudflareWARP, sin otro WiFi), con DNS manual configurado a `8.8.8.8`.
 
-**Requisito para la defensa:** Un cliente conectado **únicamente** al WiFi `UNIS-A1` (o cable Ethernet directo a un hAP de Sede Norte), sin Tailscale, sin CloudflareWARP, sin otro WiFi. Configurar DNS manual a `8.8.8.8` y verificar:
 ```
-nslookup valorant.com 8.8.8.8   → debe responder 0.0.0.0 (bloqueado por dst-nat)
-nslookup claude.ai 8.8.8.8      → debe responder 0.0.0.0 (bloqueado por dst-nat)
-nslookup google.com 8.8.8.8     → debe resolver normalmente
+PS C:\Users\andre> nslookup valorant.com 8.8.8.8
+Server:  dns.google
+Address:  8.8.8.8
+
+Name:    valorant.com
+Addresses:  ::
+          0.0.0.0
+
+PS C:\Users\andre> nslookup claude.ai 8.8.8.8
+Server:  dns.google
+Address:  8.8.8.8
+
+Name:    claude.ai
+Addresses:  ::
+          0.0.0.0
+
+PS C:\Users\andre> nslookup chatgpt.com 8.8.8.8
+Server:  dns.google
+Address:  8.8.8.8
+
+Name:    chatgpt.com
+Addresses:  ::
+          0.0.0.0
+
+PS C:\Users\andre> nslookup google.com 8.8.8.8
+Server:  dns.google
+Address:  8.8.8.8
+
+Non-authoritative answer:
+Name:    google.com
+Addresses:  2607:f8b0:4008:810::200e
+          142.176.78
 ```
+
+**Resultado:** El `dst-nat` de GW-A fuerza todo el tráfico DNS puerto 53 a Pi-hole incluso cuando el cliente usa DNS manual `8.8.8.8`. Los dominios bloqueados responden `0.0.0.0`; `google.com` resuelve normalmente.
+
+---
+
+### Clave WiFi actualizada en hAP-4A
+
+**Antes:** `passphrase="CambiarClaveWiFi2026"`  
+**Después:** `passphrase="UNIS2026"`  
+
+Comando ejecutado:
+```
+/interface wifi security set sec-unis passphrase="UNIS2026"
+```
+
+Verificado: el cliente se conectó exitosamente al WiFi `UNIS-A1` con la clave `UNIS2026`.
 
 ---
 
