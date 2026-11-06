@@ -262,4 +262,72 @@ Esperá unos **20 segundos**.
 
 ---
 
+## 10 · Estado final de validación (06/11/2026)
+
+### 10.1 Sede Norte — GW-A (RB5009) ✅
+
+```
+/routing ospf neighbor print   -> 3 Full: hAP-1A, hAP-5A, GW-B
+/ip firewall nat print         -> masquerade + 2 dst-nat DNS UDP/TCP a 10.10.254.53 (Pi-hole)
+/ip route print                -> estática dist=1 hacia 100.64.1.1 + OSPF dist=110 vía 10.99.0.2
+/container print               -> pihole HEALTHY (50.9MiB, 0.2% CPU)
+/ping 10.20.0.100 count=3      -> 0% pérdida (cruza inter-sede)
+/ping 100.64.2.1 count=3       -> 0% pérdida (ISP de Sur)
+```
+
+### 10.2 Sede Sur — GW-B (RB5009) ✅
+
+```
+/routing ospf neighbor print   -> 3 Full: GW-A, hAP-1B, hAP-4B
+/ip firewall nat print         -> masquerade + 2 dst-nat DNS UDP/TCP a 10.20.254.53 (AdGuard)
+/ip route print                -> estática dist=1 hacia 100.64.2.1 + OSPF dist=110 vía 10.99.0.1
+/container print               -> adguard HEALTHY
+/ping 10.10.0.100 count=3      -> 0% pérdida (cruza inter-sede)
+/ping 100.64.1.1 count=3       -> 0% pérdida (ISP de Norte)
+```
+
+### 10.3 Los 9 hAP ✅
+
+Cada uno: **2 vecinos OSPF Full**, **NAT vacío**, **ruta default OSPF distance=110** (sin ECMP).
+
+### 10.4 Pi-hole — DNS filtrado (Sede Norte) ✅
+
+| Ítem | Estado |
+|------|--------|
+| Contraseña admin panel web | `UNIS2026` (configurada en `configs/rsc/GW-A.rsc` línea 177) |
+| Dominios bloqueados (exact) | `valorant.com`, `playvalorant.com`, `riotgames.com`, `pvp.net`, `riotcdn.net`, `claude.ai`, `anthropic.com`, `chatgpt.com`, `openai.com`, `perplexity.com` |
+| Dominios bloqueados (regex) | `(\.|^)claude\.ai$`, `(\.|^)anthropic\.com$`, `(\.|^)chatgpt\.com$`, `(\.|^)openai\.com$`, `(\.|^)perplexity\.ai$` |
+| Verificación WiFi DNS `10.10.255.1` | Bloqueados responden `0.0.0.0`; `google.com` resuelve normalmente |
+| Verificación DNS manual `8.8.8.8` | Requiere cliente conectado **únicamente** a la red de la sede (sin Tailscale, CloudflareWARP u otro WiFi) para que el `dst-nat` del GW-A atrape el tráfico puerto 53 |
+
+### 10.5 Failover WAN (Sede Norte) ✅
+
+Probado en vivo: desenchufar `GW-A ether7` → ruta estática pasa a INACTIVE, OSPF vía `10.99.0.2` toma el control, ping a `10.20.0.100` y `100.64.2.1` responden. Volver a enchufar → ruta estática recupera ACTIVE y tráfico regresa solo.
+
+### 10.6 Servidores institucionales (estándar E-08) ✅
+
+| Sede | Equipo | IP | `/health` |
+|------|--------|-----|-----------|
+| Norte | Laptop Windows + nginx | `10.10.0.100` | `ok` (200) |
+| Sur | Raspberry Pi 4 + nginx | `10.20.0.100` | `ok` (200) |
+
+**No se necesita Raspberry Pi física en Sede Norte.** Ya se confirmó con el catedrático.
+
+---
+
+### 10.7 Checklist final antes de la defensa
+
+```
+[ ] 12 adyacencias OSPF totales (6 Norte + 5 Sur + 1 inter-sede)
+[ ] NAT vacío en todos los 9 hAP (Regla 8)
+[ ] Contenedores Pi-hole y AdGuard en estado HEALTHY
+[ ] Failover WAN validado (desconexión y restauración)
+[ ] Dominios bloqueados en Pi-hole verificados desde WiFi de la sede
+[ ] Etiquetado físico de cables (ORIGEN / PUERTO → DESTINO / PUERTO)
+[ ] 05-RESPONSABLES.md con nombres y roles del equipo
+[ ] Documentación de entrega (diagrama + tabla de IPs + ≤2 páginas decisiones)
+```
+
+---
+
 > **Regla de oro:** nunca configurar en vivo durante la defensa. La red se entrega funcionando. Si hacés un cambio, registrelo en `docs/06-DECISIONES.md` y actualice este archivo.
