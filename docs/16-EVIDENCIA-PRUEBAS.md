@@ -13,10 +13,11 @@
 | Conectividad inter-sede | ✅ PASS | Ping cruzado 10.10.0.100 ↔ 10.20.0.100, 0% pérdida |
 | OSPF vecinos (11 equipos) | ✅ PASS | 12 adyacencias (3 Full cada GW, 2 Full cada hAP) |
 | NAT vacío en hAP | ✅ PASS | `/ip firewall nat print` vacío en los 9 hAP |
-| Failover WAN Sede Norte | ✅ PASS | Desenchufar `GW-A ether7` → OSPF vía `10.99.0.2` toma el control |
-| Restauración WAN Sede Norte | ✅ PASS | Reconectar → ruta estática propia recupera ACTIVE |
-| Failover WAN Sede Sur | ✅ PASS | Desenchufar `GW-B ether7` → OSPF vía `10.99.0.1` toma el control |
-| Restauración WAN Sede Sur | ✅ PASS | Reconectar → ruta estática propia recupera ACTIVE |
+| Failover WAN Sede Norte | ✅ PASS | GW-A: estática `100.64.1.1` → INACTIVE, OSPF vía `10.99.0.2%ether1` → ACTIVE (dist=110). Verificado en `/ip route print`. |
+| Restauración WAN Sede Norte | ✅ PASS | Reconectar `GW-A ether7` → estática `100.64.1.1` recupera ACTIVE. Verificado en `/ip route print`. |
+| Failover WAN Sede Sur | ✅ PASS | GW-B: estática `100.64.2.1` → INACTIVE, OSPF vía `10.99.0.1%ether7` → ACTIVE (dist=110). Verificado en `/ip route print`. |
+| Restauración WAN Sede Sur | ✅ PASS | Reconectar `GW-B ether7` → estática `100.64.2.1` recupera ACTIVE. Verificado en `/ip route print`. |
+| Tracert desde laptop (failover/restauración) | ⚠️ PENDIENTE | Dejado para otra ocasión. El failover del router está verificado vía `/ip route print` en ambos GW. |
 | Desconexión SXT (anillo interno) | ✅ PASS | Cada anillo sigue enrutando por su cuenta, sedes separadas |
 | DNS filtrado por WiFi (DHCP) | ✅ PASS | `nslookup <bloqueado> 10.10.255.1` → `0.0.0.0` |
 | DNS filtrado con DNS manual `8.8.8.8` | ✅ PASS | Cliente desde otra compu en WiFi `UNIS-A1` con DNS `8.8.8.8`: `valorant.com`, `claude.ai`, `chatgpt.com` → `0.0.0.0` (bloqueados); `google.com` → resuelve normalmente |
@@ -258,14 +259,33 @@ Verificado: el cliente se conectó exitosamente al WiFi `UNIS-A1` con la clave `
 [ x ] Failover WAN Sede Sur (desconexión + restauración)
 [ x ] Desconexión SXT (anillos internos independientes)
 [ x ] DNS filtrado desde WiFi (DHCP → 10.10.255.1)
-[ ] DNS filtrado con DNS manual 8.8.8.8 (requiere cliente aislado en red de la sede)
+[ x ] DNS filtrado con DNS manual 8.8.8.8 (verificado desde otra compu en WiFi UNIS-A1)
 [ x ] Tabla de direccionamiento completa (docs/01-TABLA-IPs.md)
 [ x ] Decisiones de diseño (docs/06-DECISIONES.md)
-[ ] Diagrama de red con IPs y costos OSPF (falta crear)
+[ x ] Diagrama de red con IPs y costos OSPF (docs/diagrama-red.drawio + docs/17-DIAGRAMA-RED.md)
 [ ] Documento de ≤2 páginas (falta crear)
 [ ] 05-RESPONSABLES.md con nombres reales (tiene placeholders)
 [ ] Etiquetado físico de cables (ORIGEN / PUERTO → DESTINO / PUERTO)
+[ x ] Netwatch limpieza de conntrack en restauración de WAN (GW-A y GW-B)
 ```
+
+---
+
+### Netwatch — limpieza de conntrack en restauración de WAN
+
+Agregado en ambos GW para que, al volver la WAN propia, se limpien las conexiones antiguas (conntrack) y el tráfico se recupere solo sin intervención manual:
+
+**GW-A:**
+```
+/tool netwatch add host=100.64.1.1 type=icmp src-address=100.64.1.2 interval=2s timeout=1s up-script="/ip firewall connection remove [find]" comment="restauracion WAN Norte: limpia conntrack"
+```
+Verificado: `host=100.64.1.1`, status `up`.
+
+**GW-B:**
+```
+/tool netwatch add host=100.64.2.1 type=icmp src-address=100.64.2.2 interval=2s timeout=1s up-script="/ip firewall connection remove [find]" comment="restauracion WAN Sur: limpia conntrack"
+```
+Verificado: `host=100.64.2.1`, status `up`.
 
 ---
 
