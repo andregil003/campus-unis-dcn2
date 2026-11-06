@@ -71,20 +71,29 @@ Verificación: `/routing/ospf/neighbor print`.
 
 ---
 
-## E-06 · DNS filtrado (Pi-hole en container dentro del RB5009-A)
+## E-06 · DNS filtrado (Pi-hole en Norte, AdGuard en Sur)
 
-- Container con IP fija `10.10.254.53`, root-dir en USB/disco (persistente).
-- DHCP entrega DNS = **`10.10.255.1`** (GW-A).
-- GW-A hace `dst-nat` UDP y TCP puerto 53 → Pi-hole, para que ningún cliente lo esquive con 8.8.8.8.
-- Upstream de Pi-hole **distinto** de GW-A (1.1.1.1 / 9.9.9.9) para evitar loop de resolución.
+- Container con IP fija `10.10.254.53` (Norte, Pi-hole) / `10.20.254.53` (Sur, AdGuard), root-dir persistente.
+- DHCP entrega DNS = el loopback del GW de la sede: **`10.10.255.1`** (Norte) / **`10.20.255.1`** (Sur).
+- Cada GW hace `dst-nat` UDP y TCP puerto 53 → su contenedor, para que ningún cliente lo esquive con 8.8.8.8.
+- Upstream del contenedor **distinto** del GW (1.1.1.1 / 9.9.9.9) para evitar loop de resolución.
+- **Excepción aceptada (D-19, 05/11/2026):** sin USB disponible, ambos contenedores usan la **NAND interna**
+  (`root-dir=pihole6/root` y `root-dir=adguard`). Deuda declarada: en el Sur, sin mounts, un `container update`
+  pierde la configuración de AdGuard; en el Norte los mounts la mantienen fuera del root-dir.
 - **Criterio de aceptación:** el dominio de prueba acordado con el catedrático queda bloqueado tanto desde
-  WiFi como desde un cliente con DNS configurado a mano.
+  WiFi como desde un cliente con DNS configurado a mano, **en las dos sedes**.
 
 ---
 
 ## E-07 · WiFi y DHCP
 
-- SSID `UNIS-A1` … `UNIS-A5` (Sur: `UNIS-B1` … `UNIS-B4`), WPA2/WPA3 PSK (≥12 caracteres), clave única por sede.
+- SSID `UNIS-A1` … `UNIS-A5` (Sur: `UNIS-B1` … `UNIS-B4`), WPA2/WPA3 PSK,
+  **una sola clave para todo el campus: `UNIS2026`** (8 caracteres). Sustituye a la regla original
+  ("≥12 caracteres, clave única por sede") por decisión **D-18** del 05/11/2026.
+- La clave vive **solo** en el perfil `sec-unis`. Prohibido duplicarla inline en `cfg-wifi` o en `wifi1`
+  (`security.passphrase=`): una rotación futura cambiaría solo el perfil y el equipo seguiría emitiendo con la
+  clave vieja sin que se note. Verificación: `/interface wifi configuration print detail` → `security=sec-unis`
+  sin `passphrase` inline, y `/interface wifi print detail` → `configuration=cfg-wifi` sin `security.passphrase`.
 - Un /24 por nodo, DHCP en el propio hAP, gateway = el hAP, **sin NAT**, DNS = GW-A.
 - IPv6 deshabilitado (o habilitado de forma consistente en todo el campus; nunca a medias).
 - hAP ax lite usa `/interface/wifi` (paquete *wifi*), **no** `/interface/wireless`.

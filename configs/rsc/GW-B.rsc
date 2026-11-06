@@ -140,15 +140,19 @@ add area=backbone interfaces=lo passive
 # ==================================================================
 # BLOQUE 7/7 · Contenedor AdGuard Home (DNS de la Sede Sur)
 # ==================================================================
+# ESTADO REAL (05/11/2026, montado por el grupo Sur / Sharly): AdGuard Home
+# corriendo SIN mounts y con root-dir en la NAND interna ("adguard").
+# Este bloque se deja igual que el equipo para que doc y realidad coincidan.
+# Sin mounts, la configuracion vive dentro del root-dir: sobrevive reinicios,
+# pero se pierde si se hace /container update o se cambia de imagen.
 # PINEAR LA IMAGEN antes de la defensa (cambiar "latest" por un tag fijo).
-/container mounts add name=adguard_work src=/adguard/work dst=/opt/adguardhome/work
-/container mounts add name=adguard_conf src=/adguard/conf dst=/opt/adguardhome/conf
-
 /interface veth add name=veth1 address=10.20.254.53/24 gateway=10.20.254.1
 /ip address add address=10.20.254.1/24 interface=veth1 comment=red-contenedor
 
-/container add remote-image=adguard/adguardhome:latest interface=veth1 root-dir=disk1/adguard/root hostname=adguard mounts=adguard_work,adguard_conf start-on-boot=yes logging=yes comment="AdGuard DNS sede Sur"
-/container start [find comment="AdGuard DNS sede Sur"]
+# RouterOS 7.24: envs/mounts se agrupan con list= y el contenedor los
+# referencia con envlist=/mountlists=. Aqui no se usan mounts.
+/container add remote-image=adguard/adguardhome:latest interface=veth1 root-dir=adguard hostname=adguard start-on-boot=yes logging=yes name=adguard comment="AdGuard DNS sede Sur"
+/container start adguard
 
 # ---------------------------------------------------------------------
 # ESPERAR ~60 SEGUNDOS y hacer el asistente:

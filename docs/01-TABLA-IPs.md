@@ -67,7 +67,10 @@ Config: `configs/rsc/ROUTER-ISP.rsc` · backups: `configs/backups/` · decisión
 
 `ether3` del **hAP-1A** = `10.10.0.1/24`, dedicado a la Raspberry Pi. Sin bridge: es un puerto enrutado.
 
-En la Sede Sur el servidor cuelga de `ether3` del **hAP-3B** = `10.20.0.1/24` (diagrama v3; corregido el 05/11/2026, antes figuraba en hAP-1B). hAP-1B tiene ether3 libre. El `hAP-3B.rsc` se mantiene a mano y refleja la configuración real del equipo (bridge `bridge-wifi`, instancia OSPF `ospf-sur`, pool `.10-.200`, WiFi directo en `wifi1`); el generador no lo sobrescribe.
+En la Sede Sur el servidor cuelga de `ether3` del **hAP-3B** = `10.20.0.1/24` (diagrama v3; FIX-03 anulada
+el 05/11). `hAP-1B` tiene `ether3` libre. El `.rsc` de `hAP-3B` es la configuración **objetivo** (perfiles
+`sec-unis`/`cfg-wifi`, bridge `br-wifi`, instancia OSPF `ospf`, pool `.10-.250`, servidor en `ether3`); el
+equipo real se alinea con FIX-04 (ver `13-QC` §3.9).
 
 ### 1.4 Servidor y clientes
 

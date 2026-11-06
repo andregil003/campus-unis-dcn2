@@ -46,7 +46,10 @@ add address=10.10.0.1/24 interface=ether3 comment="segmento del servidor"
 # ==================================================================
 # BLOQUE 3/5 · WiFi y DHCP  --  SSID, seguridad, bridge, pool y DNS
 # ==================================================================
-/interface wifi security add name=sec-unis authentication-types=wpa2-psk,wpa3-psk passphrase="CambiarClaveWiFi2026"
+# La clave vive SOLO en sec-unis: NO fijar security.passphrase inline
+# en cfg-wifi ni en wifi1 (si se duplica, una rotacion futura deja
+# el equipo emitiendo con la clave vieja sin que se note - FIX-06).
+/interface wifi security add name=sec-unis authentication-types=wpa2-psk,wpa3-psk passphrase="UNIS2026"
 /interface wifi configuration add name=cfg-wifi ssid="UNIS-A1" security=sec-unis country=Guatemala channel.band=2ghz-ax channel.frequency=2412 channel.width=20mhz
 /interface wifi set wifi1 configuration=cfg-wifi disabled=no
 

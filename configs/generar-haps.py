@@ -38,7 +38,7 @@ SEDES = {
         "gw": "GW-B",
         "dns": "10.20.255.1",
         "server": "10.20.0.1/24",
-        "server_idx": 2,  # diagrama v3: el servidor Sur va en hAP-3B ether3
+        "server_idx": 2,  # 01-TABLA-IPs §1.3: el servidor Sur va en hAP-3B ether3 (FIX-03 anulada)
         "haps": [
             ("hAP-1B", "10.20.1.2/30", "10.20.2.1/30", "192.168.11.1/24", 2412, "10.20.255.11"),
             ("hAP-2B", "10.20.2.2/30", "10.20.3.1/30", "192.168.12.1/24", 2437, "10.20.255.12"),
@@ -48,11 +48,13 @@ SEDES = {
     },
 }
 
-# Archivos que se mantienen A MANO (reflejan la configuracion real del equipo).
+# Archivos que se mantienen A MANO por las etiquetas de puerto del equipo real.
+# Su contenido es la config OBJETIVO del informe (FIX-03 en 1B, FIX-04 en 3B);
+# las desviaciones vivas se documentan en docs/13-QC-2026-11-05.md.
 # El generador NO los sobrescribe.
-MANUALES = {"hAP-1B", "hAP-2B", "hAP-3B", "hAP-4B"}  # 05/11/2026: reflejan el export real (hAP-3B: bridge-wifi, ospf-sur, pool .10-.200, WiFi directo en wifi1; hAP-2B/4B: comentarios del equipo)
+MANUALES = {"hAP-1B", "hAP-2B", "hAP-3B", "hAP-4B"}
 
-WIFI_PASS = "CambiarClaveWiFi2026"
+WIFI_PASS = "UNIS2026"
 ADMIN_PASS = "ValoValoValo2026"
 
 
@@ -101,6 +103,9 @@ def bloques(sede_key: str, idx: int):
         b2.append(f'add address={sede["server"]} interface=ether3 comment="segmento del servidor"')
 
     b3 = [
+        "# La clave vive SOLO en sec-unis: NO fijar security.passphrase inline",
+        "# en cfg-wifi ni en wifi1 (si se duplica, una rotacion futura deja",
+        "# el equipo emitiendo con la clave vieja sin que se note - FIX-06).",
         f'/interface wifi security add name=sec-unis authentication-types=wpa2-psk,wpa3-psk passphrase="{WIFI_PASS}"',
         f'/interface wifi configuration add name=cfg-wifi ssid="{ssid}" security=sec-unis country=Guatemala channel.band=2ghz-ax channel.frequency={canal} channel.width=20mhz',
         "/interface wifi set wifi1 configuration=cfg-wifi disabled=no",

@@ -170,21 +170,27 @@ add area=backbone interfaces=lo passive
 # PINEAR LA IMAGEN ANTES DE LA DEFENSA: cambiar "latest" por el tag que
 # aparezca en /container print tras el primer pull. Un cambio de upstream
 # el dia de la defensa rompe el DNS de todo el campus.
-/container mounts add name=pihole_etc src=/pihole/etc dst=/etc/pihole
-/container mounts add name=pihole_dnsmasq src=/pihole/dnsmasq.d dst=/etc/dnsmasq.d
+/container mounts add list=pihole_mounts src=pihole6/etc dst=/etc/pihole
+/container mounts add list=pihole_mounts src=pihole6/dnsmasq.d dst=/etc/dnsmasq.d
 
-/container envs add name=pihole_envs key=TZ value=America/Guatemala
-/container envs add name=pihole_envs key=FTLCONF_webserver_api_password value="CambiarClavePihole2026"
-/container envs add name=pihole_envs key=FTLCONF_dns_upstreams value="1.1.1.1;8.8.8.8"
-/container envs add name=pihole_envs key=FTLCONF_dns_listeningMode value=all
-/container envs add name=pihole_envs key=FTLCONF_misc_etc_dnsmasq_d value=true
+/container envs add list=pihole_envs key=TZ value=America/Guatemala
+/container envs add list=pihole_envs key=FTLCONF_webserver_api_password value="UNIS2026"
+/container envs add list=pihole_envs key=FTLCONF_dns_upstreams value="1.1.1.1;9.9.9.9"
+/container envs add list=pihole_envs key=FTLCONF_dns_listeningMode value=all
+/container envs add list=pihole_envs key=FTLCONF_misc_etc_dnsmasq_d value=true
+/container envs add list=pihole_envs key=DNSMASQ_USER value=root
 
-# veth: .53 = contenedor, .1 = extremo del router. Verificar el disco
-# con /disk print (normalmente disk1).
+# OJO (RouterOS 7.24): envs y mounts se agrupan con list=, y el contenedor
+# los referencia con envlist= / mountlists= (plural). Con name= / mounts=
+# el equipo responde "bad parameter name".
+# veth: .53 = contenedor, .1 = extremo del router.
 /interface veth add name=veth1 address=10.10.254.53/24 gateway=10.10.254.1
 /ip address add address=10.10.254.1/24 interface=veth1 comment=red-contenedor
 
-/container add remote-image=pihole/pihole:latest interface=veth1 root-dir=disk1/pihole/root hostname=pihole envlist=pihole_envs mounts=pihole_etc,pihole_dnsmasq start-on-boot=yes logging=yes comment="Pi-hole DNS campus Norte"
+# root-dir en NAND porque el RB5009 no tiene USB conectado. MikroTik
+# recomienda disco externo: si aparece un pendrive, este y los src= de
+# los mounts son los unicos cambios.
+/container add remote-image=pihole/pihole:latest interface=veth1 root-dir=pihole6/root hostname=pihole envlist=pihole_envs mountlists=pihole_mounts start-on-boot=yes logging=yes name=pihole comment="Pi-hole DNS campus Norte"
 /container start [find comment="Pi-hole DNS campus Norte"]
 
 # ---------------------------------------------------------------------

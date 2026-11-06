@@ -26,8 +26,7 @@ sedes y se administran por MAC (WinBox → Neighbors). Los servidores no van aqu
    de `download.mikrotik.com` y subirlo a la raíz de Files.
 2. Cambiar en los archivos **antes de pegar**:
    - `ValoValoValo2026` → clave real de admin.
-   - `CambiarClaveWiFi2026` → clave real del WiFi (mínimo 8 caracteres, WPA2/WPA3).
-   - `CambiarClavePihole2026` → clave del panel de Pi-hole.
+   - `UNIS2026` → clave única del WiFi y del panel de Pi-hole/AdGuard (D-18/D-19; ya viene puesta).
 3. Confirmar la IP del ISP (`100.64.1.1` / `100.64.2.1`). Si el catedrático entrega otro gateway,
    se cambia en **una** línea de cada GW (ruta `default ISP`).
 4. **Mapa de puertos de los GW (D-16):** `ether1` = inter-sede a la antena (PoE-in alimenta el GW) y
@@ -62,7 +61,7 @@ divididos en bloques numerados de ≤25 líneas (`# BLOQUE n/5`), con comandos e
 | hAP | `/ip firewall nat print` | **vacío** (Regla 8) |
 | hAP | `/ip route print where dst-address=0.0.0.0/0` | default vía OSPF, `distance=110` |
 | GW | `/ip route print where dst-address=0.0.0.0/0` | estática `distance=1` activa |
-| Cliente | `ipconfig /all` | IP de `192.168.N.0/24`, gateway `192.168.N.1`, DNS `10.10.255.1` |
+| Cliente | `ipconfig /all` | IP de `192.168.N.0/24`, gateway `192.168.N.1`, DNS `10.10.255.1` (Norte) / `10.20.255.1` (Sur) |
 | Cliente | `ping 10.10.0.100` | responde (servidor de la sede) |
 | Cliente Sur | `ping 10.10.0.100` | responde a través del inter-sede |
 
@@ -76,6 +75,9 @@ python configs\generar-haps.py
 ```
 
 Los `.rsc` de los hAP se sobrescriben. Los GW (`GW-A.rsc`, `GW-B.rsc`) son manuales porque no son simétricos.
+
+Los `.rsc` son la **configuración objetivo** (lo que exige `docs/13-QC-2026-11-05.md`). El export real de un
+equipo va a `configs/backups/`; una desviación viva se documenta en el QC, no se copia al `.rsc`.
 
 ## 5. Lo que NO se toca
 

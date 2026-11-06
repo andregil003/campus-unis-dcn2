@@ -323,4 +323,57 @@ Formato: una decisión por entrada, con estado, contexto y consecuencia.
   `CRS112-8P-4S-IN`, `hEX PoE`) o cambiar el GW por `RB5009UPr+S+`.
 - **Decisor:** André.
 
+---
+
+## D-18 · Una sola clave WiFi para todo el campus: `UNIS2026`
+
+- **Estado:** TOMADA — 05/11/2026 (decisión de André, aplicada en caliente por SSH)
+- **Contexto:** E-07 pedía "≥12 caracteres, clave única por sede". En la práctica el campus tenía dos
+  claves: Sede Norte `CambiarClaveWiFi2026` (19) y Sede Sur `UNIS2026` (8). Para conectar un cliente en
+  Sede A eso obligaba a recordar dos claves distintas para el mismo campus, y el propio QC (FIX-05) lo
+  marcaba como desviación del estándar.
+- **Decisión:** **una sola clave en las 16 radios: `UNIS2026`**, aplicada por SSH en los hAP de Sede A
+  el 05/11/2026. Se acepta de forma explícita la desviación de la regla de ≥12 caracteres.
+- **Motivo:** operación simple (una clave que se dicta una vez), coherencia con la Sede B ya desplegada y
+  menos errores de tecleo en la defensa. El riesgo de una clave de 8 caracteres se acepta consciente y
+  documentado: red de laboratorio, WPA2/WPA3, sin exposición fuera del campus.
+- **Consecuencia:** `E-07` se corrige en `00-ESTANDARES.md`; `WIFI_PASS` de `configs/generar-haps.py` y
+  los 9 `.rsc` de hAP quedan en `UNIS2026`; FIX-05 del QC deja de ser "subir el Sur a 19 caracteres" y
+  pasa a "clave única aplicada". Los clientes WiFi de Sede A se reconectaron una vez.
+  `E-07` también prohíbe duplicar la clave inline (`security.passphrase=` en `cfg-wifi`/`wifi1`): FIX-06
+  limpia hAP-4B y FIX-04 alinea hAP-3B a los perfiles.
+- **Deuda:** al ser de 8 caracteres, cualquier rotación futura hay que hacerla en las 16 radios a la vez
+  y **solo en el perfil `sec-unis`** (nunca en overrides inline).
+- **Decisor:** André.
+
+---
+
+## D-19 · DNS filtrado asimétrico: Pi-hole en Norte, AdGuard en Sur
+
+- **Estado:** TOMADA — 05/11/2026 (verificado en los dos equipos, no solo documentado)
+- **Contexto:** E-06 pide "Pi-hole en container dentro del RB5009-A" y `01-TABLA-IPs.md` asigna **AdGuard
+  Home** al Sur. En la práctica cada grupo desplegó lo suyo: GW-A quedó con **Pi-hole v6** y GW-B con
+  **AdGuard Home** (montado por el grupo Sur, sin mounts y con `root-dir=adguard` en la NAND).
+- **Decisión:** **no se unifica el producto**. Cada sede mantiene el que dice la topología, y la
+  documentación se ajusta a lo que está realmente en el equipo — no al revés. Los bloques 7 de
+  `GW-A.rsc` y `GW-B.rsc` ya describen la realidad de cada GW.
+- **Estado real (05/11/2026):**
+
+  | | GW-A (Norte) | GW-B (Sur) |
+  |---|---|---|
+  | Producto | Pi-hole v6 | AdGuard Home |
+  | IP | `10.10.254.53` | `10.20.254.53` |
+  | `root-dir` | `pihole6/root` (NAND) | `adguard` (NAND) |
+  | Mounts | `/etc/pihole`, `/etc/dnsmasq.d` | **ninguno** |
+  | `/ip dns` servers | `10.10.254.53` | `10.20.254.53` |
+  | `dst-nat` 53 UDP+TCP | sí | sí |
+
+- **Consecuencia:** no hay bloque único de contenedor que sirva para los dos GW; los `.rsc` van por sede.
+  En el Sur, al no haber mounts, un `/container update` **borra** la configuración de AdGuard; en el Norte
+  los mounts la mantienen fuera del `root-dir` y sí sobrevive a un update.
+- **Deuda común:** los dos `root-dir` viven en la **NAND interna** porque no hay USB conectado. MikroTik
+  recomienda disco externo; si aparece un pendrive, se mueve el `root-dir` (y los `src=` en el Norte) y
+  nada más.
+- **Decisor:** André.
+
 
