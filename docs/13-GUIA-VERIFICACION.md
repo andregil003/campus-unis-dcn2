@@ -167,4 +167,99 @@ Invoke-WebRequest http://10.20.0.100/health    # debe devolver 'ok'
 
 ---
 
+---
+
+## 9 · Prueba de failover (WAN caída en Sede Norte)
+
+Este escenario demuestra que, si el ISP de Sede Norte falla, el tráfico sale por el enlace inter-sede hacia GW-B y su ISP, y al restablecerse la WAN propia, el tráfico regresa solo.
+
+### 9.1 Estado inicial (WAN viva)
+
+Desde GW-A (`ssh admin@10.10.255.1`):
+
+```
+/ip route print where dst-address=0.0.0.0/0
+```
+
+**Esperado:**
+```
+0  As  0.0.0.0/0    100.64.1.1   main  1      <-- WAN propia ACTIVA (dist=1)
+   D o  0.0.0.0/0    10.99.0.2%ether1  main  110  <-- OSPF de respaldo (dist=110)
+```
+
+### 9.2 Simular caída del ISP (desenchufar WAN de GW-A)
+
+**Acción física:** Desenchufá el cable de `GW-A ether7` (el que va al ROUTER-ISP / ISP del laboratorio).
+
+Esperá **10 a 20 segundos** a que RouterOS detecte el link down.
+
+### 9.3 Verificar durante la caída
+
+```
+/ip route print where dst-address=0.0.0.0/0
+```
+
+**Esperado:**
+```
+0  Is  0.0.0.0/0    100.64.1.1   main  1      <-- INACTIVE (link down)
+   D o  0.0.0.0/0    10.99.0.2%ether1  main  110  <-- OSPF vía inter-sede toma el control
+```
+
+```
+/ping 10.20.0.100 count=3
+```
+**Esperado:** responde (tráfico cruzando inter-sede hacia Servidor Sur).
+
+```
+/ping 100.64.2.1 count=3
+```
+**Esperado:** responde (llegás al ISP de Sur a través de GW-B).
+
+### 9.4 Verificar camino inverso desde GW-B (opcional)
+
+Desde GW-B (`ssh admin@10.20.255.1`):
+
+```
+/tool traceroute 8.8.8.8
+```
+
+**Esperado:** primer salto `100.64.2.1` (su propio ISP), no el inter-sede.
+
+### 9.5 Restaurar (volver a enchufar WAN de GW-A)
+
+**Acción física:** Vuelvé a enchufar el cable en `GW-A ether7`.
+
+Esperá unos **20 segundos**.
+
+```
+/ip route print where dst-address=0.0.0.0/0
+```
+
+**Esperado:** vuelve a aparecer `As 0.0.0.0/0 100.64.1.1 distance=1` (ACTIVE).
+
+```
+/ping 100.64.1.1 count=3
+```
+**Esperado:** responde otra vez.
+
+---
+
+### 9.6 Checklist de failover
+
+```
+[ ] Antes: GW-A tiene estática dist=1 hacia 100.64.1.1 + OSPF dist=110 vía 10.99.0.2
+[ ] Desenchufar WAN de GW-A (ether7)
+[ ] Esperar 10-20 s
+[ ] Después: GW-A solo tiene OSPF dist=110 vía 10.99.0.2 (estática INACTIVE)
+[ ] Ping 10.20.0.100 desde GW-A responde
+[ ] Ping 100.64.2.1 desde GW-A responde
+[ ] Traceroute desde GW-B hacia 8.8.8.8: primer salto 100.64.2.1
+[ ] Volver a enchufar WAN de GW-A
+[ ] Esperar ~20 s
+[ ] Después: GW-A recupera estática dist=1 hacia 100.64.1.1
+[ ] Ping 100.64.1.1 responde nuevamente
+```
+
+---
+
 > **Regla de oro:** nunca configurar en vivo durante la defensa. La red se entrega funcionando. Si hacés un cambio, registrelo en `docs/06-DECISIONES.md` y actualice este archivo.
