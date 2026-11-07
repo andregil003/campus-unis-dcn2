@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe de Configuración — Sede Norte (Grupo A) — DCN2</title>
+    <style>
+        @page {
+            margin: 2cm;
+            @bottom-center {
+                content: "Página " counter(page) " de " counter(pages);
+                font-size: 9pt;
+                color: #666;
+            }
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 100%;
+        }
+        .cover {
+            text-align: center;
+            padding: 4cm 2cm;
+            background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+            color: white;
+            margin-bottom: 2cm;
+        }
+        .cover h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .cover h2 {
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+        }
+        .cover .meta {
+            margin-top: 3rem;
+            font-size: 1.1rem;
+        }
+        .cover .meta p {
+            margin: 0.5rem 0;
+        }
+        h1, h2, h3 {
+            color: #1a237e;
+            border-bottom: 2px solid #1a237e;
+            padding-bottom: 0.5rem;
+        }
+        h1 { font-size: 2rem; }
+        h2 { font-size: 1.5rem; border-bottom-color: #3949ab; }
+        h3 { font-size: 1.2rem; border-bottom-color: #5c6bc0; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        th {
+            background-color: #1a237e;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f5f5f5;
+        }
+        .alert {
+            background-color: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .success {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .checklist {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 0.5rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+        .checklist li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4caf50;
+            font-weight: bold;
+        }
+        .checklist li.pending:before {
+            content: "☐";
+            color: #ff9800;
+        }
+        .command {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 0.75rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+            overflow-x: auto;
+        }
+        .section-break {
+            page-break-before: always;
+        }
+        .footer {
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: #666;
+            text-align: center;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 0.4rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+        }
+        .badge-pass { background-color: #4caf50; }
+        .badge-pending { background-color: #ff9800; }
+    </style>
+</head>
+<body>
+
+<!-- ==================== PORTADA ==================== -->
+<div class="cover">
+    <h1>Informe de Configuración</h1>
+    <h2>Sede Norte — Grupo A</h2>
+    <div class="meta">
+        <p><strong>Proyecto:</strong> Campus UNIS Integrado — Proyecto Final DCN2</p>
+        <p><strong>Curso:</strong> Data Communication Networks 2 — Segundo Semestre 2026</p>
+        <p><strong>Universidad:</strong> Universidad del Istmo (UNIS)</p>
+        <p><strong>Catedrático:</strong> Ing. Gustavo Adolfo Morales Xitamul</p>
+        <p><strong>Sede:</strong> Sede Norte — Grupo A</p>
+        <p><strong>Integrante:</strong> Jorge André Gil Leonardo</p>
+        <p><strong>Fecha:</strong> 06 de noviembre de 2026</p>
+    </div>
+</div>
+
+<!-- ==================== TABLA DE CONTENIDO ==================== -->
+<h1>Tabla de Contenido</h1>
+<ol>
+    <li>Arquitectura de Sede Norte</li>
+    <li>Direccionamiento IP de Sede Norte</li>
+    <li>Configuración de GW-A (RB5009)</li>
+    <li>Configuración de los hAP de Sede Norte (hAP-1A a hAP-5A)</li>
+    <li>Configuración del Servidor Institucional (Laptop Windows + nginx)</li>
+    <li>Configuración de Pi-hole (Contenedor DNS Filtrado)</li>
+    <li>Comandos de Verificación Paso a Paso</li>
+    <li>Prueba de Failover WAN — Sede Norte</li>
+    <li>Prueba de DNS Filtrado — Sede Norte</li>
+    <li>Checklist de Defensa — Sede Norte</li>
+    <li>Comandos Cheat Sheet</li>
+</ol>
+
+<!-- ==================== 1. ARQUITECTURA ==================== -->
+<h1>1. Arquitectura de Sede Norte</h1>
+<p>Sede Norte está compuesta por un gateway RB5009 (GW-A), cinco puntos de acceso hAP ax lite (hAP-1A a hAP-5A) formando un anillo OSPF, un servidor institucional (laptop Windows con nginx), y un contenedor Pi-hole para DNS filtrado dentro del GW-A. El enlace inter-sede hacia Sede Sur sale por ether1 hacia SXT-A.</p>
+
+<div class="alert">
+<strong>Equipos de Sede Norte:</strong>
+<ul>
+    <li>1× MikroTik RB5009UG+S+IN (GW-A)</li>
+    <li>5× MikroTik hAP ax lite (hAP-1A a hAP-5A)</li>
+    <li>1× MikroTik SXT Lite5 (SXT-A, enlace inter-sede)</li>
+    <li>1× Laptop Windows con nginx (Servidor Norte)</li>
+    <li>1× Contenedor Pi-hole dentro de GW-A</li>
+</ul>
+</div>
+
+<!-- ==================== 2. DIRECCIONAMIENTO ==================== -->
+<h1>2. Direccionamiento IP de Sede Norte</h1>
+
+<h3>GW-A (RB5009UG+S+IN)</h3>
+<table>
+    <tr><th>Interfaz</th><th>Dirección</th><th>Rol</th></tr>
+    <tr><td>ether7</td><td>100.64.1.2/30</td><td>WAN hacia ISP (gateway 100.64.1.1)</td></tr>
+    <tr><td>ether2</td><td>10.10.1.1/30</td><td>Anillo → hAP-1A</td></tr>
+    <tr><td>ether3</td><td>10.10.6.2/30</td><td>Anillo → hAP-5A (cierre)</td></tr>
+    <tr><td>ether1</td><td>10.99.0.1/30</td><td>Inter-sede → SXT-A (PoE-in alimenta el GW)</td></tr>
+    <tr><td>loopback</td><td>10.10.255.1/32</td><td>Router-id OSPF + IP DNS DHCP</td></tr>
+    <tr><td>veth1</td><td>10.10.254.1/24</td><td>Red del contenedor Pi-hole</td></tr>
+    <tr><td>—</td><td>10.10.254.53</td><td>Pi-hole (contenedor DNS)</td></tr>
+</table>
+
+<h3>Anillo Norte (hAP ax lite)</h3>
+<table>
+    <tr><th>Nodo</th><th>ether1 (anillo)</th><th>ether2 (anillo)</th><th>WiFi</th><th>Loopback</th></tr>
+    <tr><td>hAP-1A</td><td>10.10.1.2/30</td><td>10.10.2.1/30</td><td>192.168.1.1/24</td><td>10.10.255.11/32</td></tr>
+    <tr><td>hAP-2A</td><td>10.10.2.2/30</td><td>10.10.3.1/30</td><td>192.168.2.1/24</td><td>10.10.255.12/32</td></tr>
+    <tr><td>hAP-3A</td><td>10.10.3.2/30</td><td>10.10.4.1/30</td><td>192.168.3.1/24</td><td>10.10.255.13/32</td></tr>
+    <tr><td>hAP-4A</td><td>10.10.4.2/30</td><td>10.10.5.1/30</td><td>192.168.4.1/24</td><td>10.10.255.14/32</td></tr>
+    <tr><td>hAP-5A</td><td>10.10.5.2/30</td><td>10.10.6.1/30</td><td>192.168.5.1/24</td><td>10.10.255.15/32</td></tr>
+</table>
+
+<h3>Servidor e Enlace</h3>
+<table>
+    <tr><th>Elemento</th><th>Dirección</th><th>Notas</th></tr>
+    <tr><td>Servidor Norte</td><td>10.10.0.100/24</td><td>Laptop Windows + nginx, conectado a hAP-1A ether3</td></tr>
+    <tr><td>hAP-1A ether3</td><td>10.10.0.1/24</td><td>Puerto dedicado al servidor, enrutado (sin bridge)</td></tr>
+    <tr><td>SXT-A</td><td>Sin IP</td><td>Puente L2 transparente hacia SXT-B (inter-sede)</td></tr>
+</table>
+
+<!-- ==================== 3. GW-A ==================== -->
+<h1>3. Configuración de GW-A (RB5009UG+S+IN)</h1>
+
+<h3>Qué hace GW-A</h3>
+<ul>
+    <li>Es el gateway de salida a Internet de Sede Norte</li>
+    <td>Router-id de OSPF área 0: 10.10.255.1</li>
+    <li>Anuncia default por OSPF (<code>originate-default=if-installed</code>)</li>
+    <li>Tiene una ruta estática <code>distance=1</code> hacia el ISP (gana sobre OSPF)</li>
+    <li>Aloja el contenedor Pi-hole (DNS filtrado) en <code>10.10.254.53</code></li>
+    <li>Hace NAT (<code>masquerade</code>) hacia la WAN</li>
+    <li>Hace <code>dst-nat</code> del puerto 53 (DNS) a Pi-hole para que ningún cliente se salte el filtrado</li>
+</ul>
+
+<h3>Configuración clave</h3>
+<div class="command">
+/ip address add address=100.64.1.2/30 interface=ether7      # WAN<br>
+/ip address add address=10.10.1.1/30 interface=ether2       # hAP-1A<br>
+/ip address add address=10.10.6.2/30 interface=ether3       # hAP-5A<br>
+/ip address add address=10.99.0.1/30 interface=ether1       # inter-sede SXT-A<br>
+/ip address add address=10.10.255.1/32 interface=lo         # loopback router-id<br>
+/ip address add address=10.10.254.1/24 interface=veth1      # contenedor<br>
+/routing ospf instance add router-id=10.10.255.1 originate-default=if-installed<br>
+/routing ospf area add name=backbone<br>
+/routing ospf interface-template add interfaces=ether2 type=ptp cost=10<br>
+/routing ospf interface-template add interfaces=ether3 type=ptp cost=10<br>
+/routing ospf interface-template add interfaces=ether1 type=ptp cost=100<br>
+/routing ospf interface-template add interfaces=lo passive<br>
+/ip route add distance=1 gateway=100.64.1.1 check-gateway=arp<br>
+/ip firewall nat add chain=srcnat action=masquerade out-interface-list=WAN<br>
+/ip firewall nat add chain=dstnat action=dst-nat to-addresses=10.10.254.53 protocol=udp dst-port=53<br>
+/ip firewall nat add chain=dstnat action=dst-nat to-addresses=10.10.254.53 protocol=tcp dst-port=53<br>
+/container add name=pihole interface=veth1 remote-image=pihole/pihole:latest root-dir=/pihole6/root start-on-boot=yes
+</div>
+
+<h3>Verificación en GW-A</h3>
+<div class="command">
+/routing ospf neighbor print          # 3 Full: hAP-1A, hAP-5A, GW-B<br>
+/ip firewall nat print                # masquerade + 2 dst-nat DNS<br>
+/ip route print where dst-address=0.0.0.0/0   # estática dist=1 + OSPF dist=110<br>
+/container print                      # pihole HEALTHY<br>
+/ping 10.20.0.100 count=3             # servidor Sur responde (cruza inter-sede)
+</div>
+
+<!-- ==================== 4. HAP ==================== -->
+<h1>4. Configuración de los hAP de Sede Norte (hAP-1A a hAP-5A)</h1>
+
+<h3>Qué hace cada hAP</h3>
+<ul>
+    <li>Forma parte del anillo OSPF punto a punto con el vecino anterior y siguiente</li>
+    <li>Proporciona WiFi a los clientes (SSID <code>UNIS-A1</code> a <code>UNIS-A5</code>)</li>
+    <li>Actúa como gateway DHCP para los clientes WiFi</li>
+    <li><b>NO lleva ninguna regla NAT</strong> (Regla 8 del enunciado)</li>
+    <li>Anuncia su red WiFi por OSPF como pasiva (no forma vecinos en WiFi)</li>
+</ul>
+
+<h3>Configuración clave por hAP (ejemplo hAP-1A)</h3>
+<div class="command">
+/ip address add address=10.10.1.2/30 interface=ether1   # hacia GW-A<br>
+/ip address add address=10.10.2.1/30 interface=ether2   # hacia hAP-2A<br>
+/ip address add address=192.168.1.1/24 interface=br-wifi # WiFi usuarios<br>
+/ip address add address=10.10.255.11/32 interface=lo     # loopback<br>
+/routing ospf instance add router-id=10.10.255.11<br>
+/routing ospf interface-template add interfaces=ether1 type=ptp cost=10<br>
+/routing ospf interface-template add interfaces=ether2 type=ptp cost=10<br>
+/routing ospf interface-template add interfaces=br-wifi passive<br>
+/routing ospf interface-template add interfaces=lo passive<br>
+/ip dhcp-server add interface=br-wifi address-pool=pool-wifi<br>
+/ip dhcp-server network add address=192.168.1.0/24 gateway=192.168.1.1 dns-server=10.10.255.1<br>
+/ip firewall filter add chain=input action=drop   # DROP final
+</div>
+
+<h3>Verificación en CUALQUIER hAP de Sede Norte</h3>
+<div class="command">
+/routing ospf neighbor print        # 2 Full<br>
+/ip firewall nat print              # VACÍO (Regla 8)<br>
+/ip route print where dst-address=0.0.0.0/0   # default OSPF distance=110<br>
+/interface ethernet print           # puertos del anillo en estado R
+</div>
+
+<!-- ==================== 5. SERVIDOR ==================== -->
+<h1>4. Configuración del Servidor Institucional (Sede Norte)</h1>
+
+<h3>Equipo: Laptop Windows + nginx</h3>
+<table>
+    <tr><th>Elemento</th><th>Valor</th></tr>
+    <tr><td>IP fija</td><td>10.10.0.100/24</td></tr>
+    <tr><td>Puerto</td><td>80 (nginx)</td></tr>
+    <tr><td>Endpoint</td><td>/health devuelve "ok"</td></tr>
+    <tr><td>Arranque automático</td><td>Tarea programada "Campus UNIS nginx"</td></tr>
+    <tr><td>Conectado a</td><td>hAP-1A ether3 (10.10.0.1/24)</td></tr>
+</table>
+
+<h3>Verificación desde PowerShell</h3>
+<div class="command">
+Invoke-WebRequest http://10.10.0.100/health<br>
+# Esperado: StatusCode 200, Content: ok<br>
+<br>
+Test-NetConnection -ComputerName 10.10.0.100 -Port 80<br>
+# Esperado: TcpTestSucceeded: True<br>
+<br>
+ping 10.10.0.100<br>
+# Esperado: 0% pérdida
+</div>
+
+<!-- ==================== 6. PIHOLE ==================== -->
+<h1>5. Configuración de Pi-hole — DNS Filtrado (Sede Norte)</h1>
+
+<h3>Qué es y dónde corre</h3>
+<ul>
+    <li>Contenedor Docker dentro de GW-A (RB5009)</li>
+    <li>IP del contenedor: <code>10.10.254.53</code></li>
+    <li>Red del contenedor: <code>veth1</code> (10.10.254.0/24)</li>
+    <li>Estado: <code>HEALTHY</code></li>
+    <li>Arranque automático: <code>start-on-boot=yes</code></li>
+</ul>
+
+<h3>Cómo funciona el filtrado</h3>
+<ol>
+    <li>El cliente WiFi se conecta a <code>UNIS-A1</code></li>
+    <li>DHCP entrega DNS = <code>10.10.255.1</code> (loopback de GW-A)</li>
+    <li>GW-A hace <code>dst-nat</code> del puerto 53 (UDP y TCP) hacia Pi-hole (<code>10.10.254.53</code>)</li>
+    <li>Pi-hole bloquea dominios en su blacklist y reenvía el resto a upstreams (1.1.1.1, 9.9.9.9)</li>
+</ul>
+
+<h3>Dominios bloqueados en Pi-hole (Norte)</h3>
+<table>
+    <tr><th>Tipo</th><th>Dominios</th></tr>
+    <tr><td>Exactos (10)</td><td>valorant.com, playvalorant.com, riotgames.com, pvp.net, riotcdn.net, claude.ai, anthropic.com, chatgpt.com, openai.com, perplexity.com</td></tr>
+    <tr><td>Regex (5)</td><td>(\.|^)claude\.ai$, (\.|^)anthropic\.com$, (\.|^)chatgpt\.com$, (\.|^)openai\.com$, (\.|^)perplexity\.ai$</td></tr>
+</table>
+
+<h3>Panel web de Pi-hole</h3>
+<ul>
+    <li>URL: <code>http://10.10.254.53/admin</code></li>
+    <li>Usuario: <code>admin</code></li>
+    <li>Contraseña: <code>UNIS2026</code></li>
+</ul>
+
+<h3>Verificación desde cliente WiFi</h3>
+<div class="command">
+nslookup valorant.com 10.10.255.1   → 0.0.0.0 (bloqueado)<br>
+nslookup claude.ai 10.10.255.1      → 0.0.0.0 (bloqueado)<br>
+nslookup google.com 10.10.255.1     → resuelve normalmente<br>
+nslookup valorant.com 8.8.8.8       → 0.0.0.0 (bloqueado, dst-nat funciona)<br>
+</div>
+
+<!-- ==================== 7. COMANDOS VERIFICACIÓN ==================== -->
+<h1>6. Comandos de Verificación Paso a Paso</h1>
+
+<h3>En GW-A</h3>
+<div class="command">
+/routing ospf neighbor print<br>
+/ip firewall nat print<br>
+/ip route print where dst-address=0.0.0.0/0<br>
+/container print<br>
+/ping 10.20.0.100 count=3
+</div>
+
+<h3>En cada hAP (hAP-1A a hAP-5A)</h3>
+<div class="command">
+/routing ospf neighbor print<br>
+/ip firewall nat print<br>
+/ip route print where dst-address=0.0.0.0/0<br>
+/interface ethernet print
+</div>
+
+<h3>Desde PowerShell (laptop)</h3>
+<div class="command">
+Invoke-WebRequest http://10.10.0.100/health<br>
+Invoke-WebRequest http://10.20.0.100/health<br>
+Test-NetConnection -ComputerName 10.20.0.100<br>
+nslookup valorant.com 10.10.255.1<br>
+nslookup valorant.com 8.8.8.8
+</div>
+
+<!-- ==================== 8. FAILOVER ==================== -->
+<h1>7. Prueba de Failover WAN — Sede Norte</h1>
+
+<h3>Estado inicial (GW-A)</h3>
+<div class="command">
+/ip route print where dst-address=0.0.0.0/0
+</div>
+<table>
+    <tr><th>Estado</th><th>Ruta</th></tr>
+    <tr><td>Normal</td><td>As 0.0.0.0/0 → 100.64.1.1 (dist=1, ACTIVE)</td></tr>
+    <tr><td>WAN caída</td><td>DAo 0.0.0.0/0 → 10.99.0.2%ether1 (dist=110, OSPF)</td></tr>
+</table>
+
+<h3>Pasos de la prueba</h3>
+<ol>
+    <li>Desde GW-A: <code>/ip route print where dst-address=0.0.0.0/0</code> — verificar que la estática es ACTIVE</li>
+    <li><strong>Desenchufar el cable de GW-A ether7</strong> (WAN hacia ISP)</li>
+    <li>Esperar 10-20 segundos</li>
+    <li>Desde GW-A: <code>/ip route print where dst-address=0.0.0.0/0</code> — verificar que solo queda OSPF vía 10.99.0.2</li>
+    <li>Desde laptop: <code>ping 10.20.0.100</code> — debe responder (tráfico cruzando inter-sede)</li>
+    <li><strong>Volver a enchufar el cable de GW-A ether7</strong></li>
+    <li>Esperar 20 segundos</li>
+    <li>Desde GW-A: verificar que la estática vuelve a ACTIVE</li>
+</ol>
+
+<!-- ==================== 9. CHECKLIST ==================== -->
+<h1>8. Checklist de Defensa — Sede Norte</h1>
+
+<h3>Técnico (verificado)</h3>
+<ul class="checklist">
+    <li class="success">Servidor Norte (nginx, 10.10.0.100, /health = ok)</li>
+    <li class="success">hAP-1A a hAP-5A: 2 vecinos OSPF Full cada uno</li>
+    <li class="success">GW-A: 3 vecinos OSPF Full (hAP-1A, hAP-5A, GW-B)</li>
+    <li class="success">NAT vacío en todos los hAP de Sede Norte</li>
+    <li class="success">Failover WAN Sede Norte verificado</li>
+    <li class="success">Restauración WAN Sede Norte verificada</li>
+    <li class="success">Pi-hole DNS filtrado funcionando</li>
+    <li class="success">DNS forzado con 8.8.8.8 (dst-nat)</li>
+    <li class="success">Netwatch conntrack limpieza configurado en GW-A</li>
+</ul>
+
+<h3>Documentación (entregable)</h3>
+<ul class="checklist">
+    <li class="pending">Documento de ≤2 páginas (decisiones + problemas)</li>
+    <li class="pending">05-RESPONSABLES.md con nombres reales</li>
+</ul>
+
+<h3>Instalación física (+5 puntos)</h3>
+<ul class="checklist">
+    <li class="pending">Rackeo: GW-A y hAPs en rack o estructura ordenada</li>
+    <li class="pending">Etiquetado: ORIGEN / PUERTO → DESTINO / PUERTO</li>
+    <li class="pending">Organización: velcro/bridas, sin cables colgando</li>
+</ul>
+
+<!-- ==================== 9. CHEAT SHEET ==================== -->
+<h1>7. Comandos Cheat Sheet</h1>
+
+<h3>Desde PowerShell (laptop Sede Norte)</h3>
+<div class="command">
+Invoke-WebRequest http://10.10.0.100/health<br>
+Invoke-WebRequest http://10.20.0.100/health<br>
+Test-NetConnection -ComputerName 10.20.0.100<br>
+nslookup valorant.com 10.10.255.1<br>
+nslookup valorant.com 8.8.8.8<br>
+nslookup google.com 10.10.255.1<br>
+ipconfig /flushdns
+</div>
+
+<h3>Desde WinBox → New Terminal (cualquier router de Sede Norte)</h3>
+<div class="command">
+/routing ospf neighbor print<br>
+/ip firewall nat print<br>
+/ip route print where dst-address=0.0.0.0/0<br>
+/interface ethernet print<br>
+/container print   (solo GW-A)<br>
+/tool netwatch print   (solo GW-A)<br>
+/ping 10.20.0.100 count=3   (desde GW-A)
+</div>
+
+<h3>Desde WinBox (SXT-A, sin IP)</h3>
+<div class="command">
+/interface wireless registration-table print
+</div>
+
+<!-- ==================== 10. FOOTER ==================== -->
+<div class="footer">
+    <p><strong>Informe de Configuración — Sede Norte (Grupo A)</strong> | Proyecto Final DCN2 — Segundo Semestre 2026</p>
+    <p>Universidad del Istmo | Repositorio: github.com/andregil003/campus-unis-dcn2</p>
+</div>
+
+</body>
+</html>
